@@ -1,178 +1,182 @@
 # Koi Network 技术选型说明
 
-## 📦 核心依赖
+本页解释 `koi_network` 当前依赖栈和设计取舍，重点说明：
 
-### 1. dio (^5.8.0) - HTTP 客户端
-
-**选择理由**:
-- ✅ Flutter 生态最流行的 HTTP 客户端
-- ✅ 强大的拦截器系统
-- ✅ 支持请求取消、超时、重试
-- ✅ 完善的错误处理
-- ✅ 活跃的社区维护
-
-**官方文档**: https://pub.dev/packages/dio
+- 为什么基于 Dio 构建
+- 为什么使用现成的缓存与重试中间件
+- 为什么采用适配器架构，而不是把 UI / 日志 / 认证逻辑写死
 
 ---
 
-### 2. dio_cache_interceptor (^3.5.0) - 专业缓存方案 ⭐
+## 当前核心依赖
 
-**为什么不自己实现缓存？**
+### 1. `dio` `^5.8.0`
 
-自己实现缓存需要考虑：
-- ❌ 缓存过期策略
-- ❌ 缓存验证（ETag, Last-Modified）
-- ❌ 缓存存储（内存、文件、数据库）
-- ❌ 缓存清理和管理
-- ❌ 多种缓存策略
-- ❌ 跨平台支持（Web、移动、桌面）
+用途：
 
-**dio_cache_interceptor 的优势**:
-- ✅ 业界最佳实践
-- ✅ 支持多种缓存策略
-  - `CachePolicy.request` - 优先使用缓存，缓存过期则请求网络
-  - `CachePolicy.refresh` - 强制刷新，忽略缓存
-  - `CachePolicy.cacheOnly` - 仅使用缓存
-  - `CachePolicy.noCache` - 不使用缓存
-  - `CachePolicy.forceCache` - 强制使用缓存，即使过期
-- ✅ 支持多种存储后端
-  - `MemCacheStore` - 内存存储（Web）
-  - `FileCacheStore` - 文件存储
-  - `HiveCacheStore` - Hive 存储（推荐）
-  - `DbCacheStore` - 数据库存储
-- ✅ 自动处理 HTTP 缓存头
-- ✅ 支持 stale-while-revalidate 策略
-- ✅ 完善的缓存管理 API
+- 作为底层 HTTP 客户端
+- 提供拦截器、超时、取消请求、错误封装等能力
 
-**官方文档**: https://pub.dev/packages/dio_cache_interceptor
+选择原因：
+
+- 生态成熟，文档完善
+- 拦截器能力强，适合认证、错误处理、日志和重试扩展
+- 在 Dart / Flutter 生态中应用广泛
+
+文档：<https://pub.dev/packages/dio>
 
 ---
 
-### 3. dio_smart_retry (^6.0.0) - 智能重试机制 ⭐
+### 2. `dio_cache_interceptor` `^4.0.5`
 
-**为什么不自己实现重试？**
+用途：
 
-自己实现重试需要考虑：
-- ❌ 哪些错误应该重试？
-- ❌ 重试次数和延迟策略
-- ❌ 指数退避算法
-- ❌ 幂等性检查
-- ❌ 重试日志记录
+- 为请求提供缓存策略支持
+- 统一缓存过期和缓存命中逻辑
 
-**dio_smart_retry 的优势**:
-- ✅ 智能识别可重试的错误
-  - 网络超时
-  - 连接错误
-  - 5xx 服务器错误
-- ✅ 可配置重试策略
-  - 重试次数
-  - 重试延迟
-  - 指数退避
-- ✅ 自动跳过不可重试的请求
-  - POST/PUT/DELETE（非幂等）
-  - 已成功的请求
-- ✅ 完善的日志记录
-- ✅ 与 Dio 无缝集成
+当前包内的使用方式：
 
-**官方文档**: https://pub.dev/packages/dio_smart_retry
+- 在 `KoiDioFactory` 中按配置启用缓存拦截器
+- 默认使用 `MemCacheStore`
+- 由 `KoiNetworkConfig.enableCache` 和 `maxCacheSize` 控制
 
-**使用示例**:
-```dart
-// 在 DioFactory 中自动配置
-dio.interceptors.add(
-  RetryInterceptor(
-    dio: dio,
-    retries: 3,
-    retryDelays: [
-      Duration(seconds: 1),
-      Duration(seconds: 2),
-      Duration(seconds: 3),
-    ],
-  ),
-);
-```
+为什么选择它：
+
+- 不需要自己维护缓存策略、过期、清理逻辑
+- 能和 Dio 拦截器链自然集成
+- 比手写缓存中间层更稳定、更易维护
+
+文档：<https://pub.dev/packages/dio_cache_interceptor>
 
 ---
 
-### 4. pretty_dio_logger (^1.4.0) - 日志美化
+### 3. `dio_smart_retry` `^7.0.1`
 
-**选择理由**:
-- ✅ 美化的日志输出
-- ✅ 可配置的日志级别
-- ✅ 支持请求/响应/错误日志
-- ✅ 便于调试
+用途：
 
-**官方文档**: https://pub.dev/packages/pretty_dio_logger
+- 自动处理网络层重试
+- 统一超时、连接错误和部分服务端错误的重试策略
 
----
+当前包内的使用方式：
 
-## 🎯 技术选型原则
+- 在 `KoiDioFactory` 中按配置启用 `RetryInterceptor`
+- 重试开关与参数由 `KoiNetworkConfig` 控制
 
-### 1. 使用成熟的第三方库
+为什么选择它：
 
-**原则**: 不重复造轮子，使用业界最佳实践
+- 省去自研重试策略带来的边界条件维护成本
+- 与 Dio 拦截器链兼容性好
+- 将“网络层重试”和“业务层重试”清晰分离
 
-**理由**:
-- ✅ 节省开发时间
-- ✅ 减少 Bug
-- ✅ 获得社区支持
-- ✅ 持续更新和维护
+说明：
 
-### 2. 优先选择官方推荐
+- 网络层自动重试由 `dio_smart_retry` 负责
+- 应用层业务重试则由 `KoiRequestExecutor.executeWithRetry()` 等 API 提供
 
-**原则**: 优先使用 Dio 官方推荐的插件
-
-**理由**:
-- ✅ 更好的兼容性
-- ✅ 更完善的文档
-- ✅ 更活跃的维护
-
-### 3. 关注性能和稳定性
-
-**原则**: 选择经过大规模验证的库
-
-**理由**:
-- ✅ `dio_cache_interceptor` - 被众多大型项目使用
-- ✅ `dio_smart_retry` - Dio 官方推荐
-- ✅ `hive` - Flutter 社区最流行的本地存储方案
+文档：<https://pub.dev/packages/dio_smart_retry>
 
 ---
 
-## 📊 对比分析
+### 4. `pretty_dio_logger` `^1.4.0`
 
-### 缓存方案对比
+用途：
 
-| 方案 | 优点 | 缺点 | 推荐度 |
-|------|------|------|--------|
-| 自己实现 | 完全可控 | 开发成本高、容易出错 | ❌ |
-| shared_preferences | 简单 | 功能有限、不支持复杂缓存策略 | ⚠️ |
-| dio_cache_interceptor | 专业、功能完整 | 需要额外依赖 | ✅ ⭐ |
+- 在调试环境输出更易读的请求日志
 
-### 重试方案对比
+当前包内的使用方式：
 
-| 方案 | 优点 | 缺点 | 推荐度 |
-|------|------|------|--------|
-| 自己实现 | 完全可控 | 容易遗漏边界情况 | ❌ |
-| 手动重试 | 简单直接 | 代码重复、不够智能 | ⚠️ |
-| dio_smart_retry | 智能、自动化 | 需要额外依赖 | ✅ ⭐ |
+- 仅在 `KoiNetworkConfig.enableLogging` 为 `true` 时启用
+
+为什么选择它：
+
+- 对调试阶段很有帮助
+- 接入成本低
+- 不影响生产环境按需关闭
+
+文档：<https://pub.dev/packages/pretty_dio_logger>
 
 ---
 
-## ✨ 总结
+## 架构取舍
 
-Koi Network 的技术选型遵循以下原则：
+### 1. 采用适配器架构
 
-1. **专业性** - 使用业界最佳实践
-2. **可靠性** - 选择经过验证的成熟库
-3. **易用性** - 提供简洁的 API
-4. **可维护性** - 减少自定义代码，降低维护成本
+`koi_network` 没有把以下逻辑直接写死在库里：
 
-通过使用 `dio_cache_interceptor` 和 `dio_smart_retry`，我们获得了：
-- ✅ 专业的缓存管理
-- ✅ 智能的重试机制
-- ✅ 更少的代码
-- ✅ 更高的可靠性
-- ✅ 更好的性能
+- token 存储
+- 错误提示 UI
+- loading UI
+- 平台信息
+- 日志框架
 
-**这是一个经过深思熟虑的技术选型，符合 Flutter 生态的最佳实践！** 🎉
+而是通过这些适配器暴露给宿主项目：
+
+- `KoiAuthAdapter`
+- `KoiErrorHandlerAdapter`
+- `KoiLoadingAdapter`
+- `KoiPlatformAdapter`
+- `KoiLoggerAdapter`
+- `KoiResponseParser`
+- `KoiRequestEncoder`
+
+这样做的好处：
+
+- 包本身更通用
+- 不依赖具体状态管理框架或 UI 框架
+- 更适合在多项目间复用
+
+---
+
+### 2. 统一执行器入口
+
+包里同时提供两类执行器：
+
+- `KoiRequestExecutor`：处理普通 Dio 响应
+- `KoiTypedRequestExecutor`：处理已强类型化的响应对象
+
+这样可以兼容两类项目：
+
+- 直接使用 Dio 的项目
+- 已使用 Retrofit / OpenAPI 生成代码的项目
+
+---
+
+### 3. 将 token 刷新拆成独立 token Dio
+
+刷新 token 时，包会使用单独的 token Dio 实例，而不是主业务 Dio。
+
+原因：
+
+- 避免 refresh 请求再次走完整认证/刷新链
+- 降低循环依赖风险
+- 让 refresh 请求路径更清晰、可控
+
+---
+
+## 为什么不做成“一体化网络框架”
+
+`koi_network` 的目标不是替代应用层架构，而是提供一层稳定、可组合的网络基础设施。
+
+因此它不会强制：
+
+- 状态管理方案
+- UI 提示方案
+- 实体建模方式
+- 接口定义工具链
+
+这也是它和很多项目内自用网络封装的核心区别。
+
+---
+
+## 总结
+
+`koi_network` 当前技术选型的核心原则是：
+
+1. **复用成熟组件**，避免重复造轮子
+2. **通过适配器解耦宿主项目**
+3. **把网络层能力和业务层能力分清楚**
+4. **优先保证可维护性和跨项目复用性**
+
+如果你只关心如何接入，优先阅读 [QUICK_START.md](QUICK_START.md)。
+如果你想看真实调用方式，继续阅读 [USAGE_EXAMPLE.md](USAGE_EXAMPLE.md)。
 

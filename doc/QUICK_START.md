@@ -1,203 +1,242 @@
 # Koi Network 快速开始指南
 
-5 分钟快速上手 Koi Network 网络库
+这份文档面向首次接入 `koi_network` 的开发者，目标是在最少配置下完成：
+
+1. 添加依赖
+2. 注册适配器
+3. 初始化网络层
+4. 发起第一个请求
 
 ---
 
-## 📦 第一步：添加依赖
+## 1. 添加依赖
 
-在你的 `pubspec.yaml` 中添加：
+在 `pubspec.yaml` 中添加：
 
 ```yaml
 dependencies:
   koi_network: ^0.0.1
 ```
 
-运行：
+安装依赖：
+
+```bash
+dart pub get
+```
+
+如果你的项目是 Flutter 应用，也可以使用：
+
 ```bash
 flutter pub get
 ```
 
 ---
 
-## 🔧 第二步：实现适配器
+## 2. 实现最小适配器
 
-在你的应用层（如 `oa_app/lib/adapters/network/`）创建适配器实现。
+`koi_network` 通过适配器解耦 UI、日志、认证和平台信息。
+首次接入时，至少需要提供：
 
-### 示例：认证适配器
+- `KoiAuthAdapter`
+- `KoiErrorHandlerAdapter`
+- `KoiLoadingAdapter`
+- `KoiPlatformAdapter`
+
+下面是一个最小可运行示例：
 
 ```dart
-// oa_app/lib/adapters/network/oa_auth_adapter.dart
+import 'package:dio/dio.dart';
 import 'package:koi_network/koi_network.dart';
-import 'package:oa_core/oa_core.dart';
 
-class OaAuthAdapter extends KoiAuthAdapter with KoiJwtTokenMixin {
+class DemoAuthAdapter extends KoiAuthAdapter with KoiJwtTokenMixin {
+  String? _token;
+
   @override
-  String? getToken() => UserStore.to.token.value;
-  
+  String? getToken() => _token;
+
   @override
   Future<bool> refresh() async {
-    // 实现你的 Token 刷新逻辑
     final dio = KoiDioFactory.createTokenDio(null);
-    final response = await dio.post('/auth/refresh');
-    await saveToken(response.data['access_token']);
+    final response = await dio.post(
+      '/auth/refresh',
+      data: {'refresh_token': getRefreshToken()},
+    );
+
+    final accessToken = response.data['access_token'] as String?;
+    if (accessToken == null || accessToken.isEmpty) {
+      return false;
+    }
+
+    await saveToken(accessToken);
     return true;
   }
-  
-  @override
-  String? getRefreshToken() => UserStore.to.refreshToken;
-  
+
   @override
   Future<void> saveToken(String token) async {
-    await UserStore.to.setToken(token);
+    _token = token;
+  }
+
+  @override
+  Future<void> clearToken() async {
+    _token = null;
+  }
+}
+
+class DemoErrorHandler extends KoiErrorHandlerAdapter {
+  @override
+  void showError(String message) {
+    print('Error: $message');
+  }
+
+  @override
+  Future<bool> handleAuthError({int? statusCode, String? message}) async {
+    print('Auth error: $statusCode, $message');
+    return true;
+  }
+
+  @override
+  String formatErrorMessage(DioException error) {
+    return error.message ?? error.toString();
+  }
+}
+
+class DemoLoadingAdapter extends KoiLoadingAdapter {
+  @override
+  void showLoading({String? message}) {
+    print(message ?? 'Loading...');
+  }
+
+  @override
+  void hideLoading() {
+    print('Loading finished');
   }
 }
 ```
 
-### 其他适配器
-
-参考 [README.md](README.md#2-实现适配器) 实现其他必需的适配器：
-- `OaErrorHandlerAdapter` - 错误处理
-- `OaLoadingAdapter` - 加载提示
-- `OaPlatformAdapter` - 平台检测
-- `OaLoggerAdapter` - 日志记录
-
----
-
-## 🚀 第三步：注册适配器
-
-在应用层创建适配器注册服务：
+`KoiDefaultPlatformAdapter` 和 `KoiDefaultLoggerAdapter` 可以直接复用：
 
 ```dart
-// oa_app/lib/services/network_adapter_registry.dart
-import 'package:koi_network/koi_network.dart';
-import '../adapters/network/oa_auth_adapter.dart';
-import '../adapters/network/oa_error_handler_adapter.dart';
-import '../adapters/network/oa_loading_adapter.dart';
-import '../adapters/network/oa_platform_adapter.dart';
-import '../adapters/network/oa_logger_adapter.dart';
-
-class NetworkAdapterRegistry {
-  static void registerAdapters() {
-    KoiNetworkAdapters.register(
-      authAdapter: OaAuthAdapter(),
-      errorHandlerAdapter: OaErrorHandlerAdapter(),
-      loadingAdapter: OaLoadingAdapter(),
-      platformAdapter: OaPlatformAdapter(),
-      loggerAdapter: OaLoggerAdapter(),
-    );
-    print('✅ 网络适配器注册完成');
-  }
-}
+final platformAdapter = KoiDefaultPlatformAdapter();
+final loggerAdapter = KoiDefaultLoggerAdapter();
 ```
 
 ---
 
-## 🎯 第四步：在 main.dart 中初始化
+## 3. 注册适配器并初始化
 
-### 单模块应用
+在真正发请求之前，先注册适配器，再初始化网络层：
 
 ```dart
-// oa_app/lib/main.dart
-import 'package:flutter/material.dart';
 import 'package:koi_network/koi_network.dart';
-import 'services/network_adapter_registry.dart';
 
-void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  
-  // 1. 注册网络适配器（必须在初始化网络服务之前）
-  NetworkAdapterRegistry.registerAdapters();
-  
-  // 2. 初始化网络服务
+Future<void> setupNetwork() async {
+  KoiNetworkAdapters.register(
+    authAdapter: DemoAuthAdapter(),
+    errorHandlerAdapter: DemoErrorHandler(),
+    loadingAdapter: DemoLoadingAdapter(),
+    platformAdapter: KoiDefaultPlatformAdapter(),
+    loggerAdapter: KoiDefaultLoggerAdapter(),
+  );
+
   await KoiNetworkInitializer.initialize(
     baseUrl: 'https://api.example.com',
     environment: 'development',
   );
-  
-  runApp(MyApp());
 }
 ```
 
-### 多模块应用（推荐）⭐
-
-如果你的应用需要对接多个后端服务：
+如果你需要更细粒度的配置，可以先创建 `KoiNetworkConfig`：
 
 ```dart
-// oa_app/lib/main.dart
-import 'package:flutter/material.dart';
-import 'package:oa_core/oa_core.dart';
-import 'package:koi_network/koi_network.dart';
-import 'services/network_adapter_registry.dart';
+final config = KoiNetworkConfig.create(
+  baseUrl: 'https://api.example.com',
+  enableLogging: true,
+  enableRetry: true,
+  maxRetries: 3,
+);
 
-void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  
-  // 1. 注册网络适配器
-  NetworkAdapterRegistry.registerAdapters();
-  
-  // 2. 初始化多个网络模块
-  await KoiNetworkInitializer.initialize(
-    baseUrl: 'https://api-common.example.com',
-    environment: 'development',
-    key: NetworkModuleKeys.main,  // 使用常量，避免硬编码
-  );
-  
-  await KoiNetworkInitializer.initialize(
-    baseUrl: 'https://api-module1.example.com',
-    environment: 'development',
-    key: NetworkModuleKeys.highSchool,
-  );
-  
-  runApp(MyApp());
-}
+await KoiNetworkInitializer.initializeWithConfig(config);
 ```
-
-> **提示**: 
-> - 在 `oa_core/utils/network_constants.dart` 中定义 `NetworkModuleKeys`
-> - `main` 模块必须先初始化（用于创建共享 Token Dio）
-> - 每个模块可配置不同的 baseUrl
-
 
 ---
 
-## 💡 第五步：在 Controller 中使用
+## 4. 发起第一个请求
 
-### 方式 1：使用基础 Mixin
+初始化完成后，可以通过 `KoiNetworkServiceManager` 获取 Dio 实例：
 
 ```dart
-import 'package:get/get.dart';
-import 'package:oa_core/oa_core.dart';
+final dio = KoiNetworkServiceManager.instance.mainDio;
 
-class MyController extends GetxController with KoiNetworkRequestMixin {
-  Future<void> loadData() async {
-    // 通用请求（显示加载、显示错误）
-    final data = await universalRequest<MyData>(
-      request: () => apiClient.getData(),
-      onSuccess: (data) => print('成功: $data'),
-    );
+final user = await KoiRequestExecutor.execute<Map<String, dynamic>>(
+  request: () => dio.get('/user/profile'),
+);
+```
 
-    // 静默请求（不显示加载和错误）
-    await silentRequest<MyData>(
-      request: () => apiClient.getData(),
-    );
+如果响应不是标准 `Map`，也可以传入 `fromJson`：
 
-    // 快速请求（不显示加载，但显示错误）
-    await quickRequest<MyData>(
-      request: () => apiClient.getData(),
+```dart
+final profile = await KoiRequestExecutor.execute<UserProfile>(
+  request: () => dio.get('/user/profile'),
+  fromJson: (json) => UserProfile.fromJson(json as Map<String, dynamic>),
+);
+```
+
+---
+
+## 5. 使用 Mixin 简化调用
+
+如果你希望在业务类里直接复用请求模式，可以使用 `KoiNetworkRequestMixin`：
+
+```dart
+class UserController with KoiNetworkRequestMixin {
+  Future<void> loadProfile(Dio dio) async {
+    await universalRequest<Map<String, dynamic>>(
+      request: () => dio.get('/user/profile'),
+      onSuccess: (data) => print('Profile loaded: $data'),
     );
   }
 }
 ```
 
+常见模式包括：
+
+- `universalRequest`: 显示 loading，显示错误
+- `silentRequest`: 不显示 loading，不显示错误
+- `quickRequest`: 不显示 loading，但显示错误
+- `batchRequest`: 多请求批量执行
+- `retryRequest`: 应用层重试
+
 ---
 
-## ✅ 完成！
+## 6. 多模块初始化
 
-现在你已经成功集成了 Koi Network。
+如果应用需要连接多个后端服务，可以用不同的 `key` 初始化多个模块：
 
-### 下一步
+```dart
+await KoiNetworkInitializer.initialize(
+  baseUrl: 'https://api-common.example.com',
+  key: 'main',
+);
 
-- 📖 查看 [完整使用示例](USAGE_EXAMPLE.md)
-- 🔧 了解 [Token 无感刷新](TOKEN_REFRESH_GUIDE.md)
-- 📚 阅读 [技术选型说明](TECH_STACK.md)
+await KoiNetworkInitializer.initialize(
+  baseUrl: 'https://api-orders.example.com',
+  key: 'orders',
+);
+
+final ordersDio =
+    KoiNetworkServiceManager.instance.getModuleDio('orders');
+```
+
+说明：
+
+- `main` 模块建议先初始化
+- 所有模块共享同一个 token Dio
+- 每个模块可以拥有不同的 `baseUrl`
+
+---
+
+## 下一步
+
+- 阅读 [../README.md](../README.md) 了解整体能力
+- 阅读 [USAGE_EXAMPLE.md](USAGE_EXAMPLE.md) 查看完整示例
+- 阅读 [TOKEN_REFRESH_GUIDE.md](TOKEN_REFRESH_GUIDE.md) 了解 token 刷新机制

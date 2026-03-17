@@ -1,178 +1,234 @@
 # Koi Network 使用示例
 
-## 📋 完整使用流程
-
-### 1. 在 main.dart 中初始化
-
-```dart
-import 'package:flutter/material.dart';
-import 'package:oa_core/oa_core.dart';
-
-void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  
-  // 初始化 OA 网络服务
-  await OaNetworkService.initialize(
-    baseUrl: 'https://api.example.com',
-    environment: 'development', // 或 'production', 'testing'
-    customHeaders: {
-      'X-Custom-Header': 'value',
-    },
-  );
-  
-  runApp(MyApp());
-}
-```
+本页提供几个常见的公开使用场景，所有示例都基于当前真实可用的公开 API。
 
 ---
 
-## 🎯 在 Controller 中使用（推荐：Mixin 方式）
-
-> **适用场景**：所有 GetX Controller 中的网络请求
-
-使用 `KoiNetworkRequestMixin` 可以让代码更简洁、更具语义化。
-
-```dart
-import 'package:get/get.dart';
-import 'package:oa_core/oa_core.dart';
-
-class MyController extends GetxController with KoiNetworkRequestMixin {
-  final RxList<MyData> dataList = <MyData>[].obs;
-
-  /// 通用请求：显示 Loading + 显示错误
-  Future<void> loadData() async {
-    await universalRequest<List<MyData>>(
-      request: () => apiClient.getData(),
-      onSuccess: (data) => dataList.value = data ?? [],
-    );
-  }
-
-  /// 静默请求：不显示 Loading，不显示错误
-  /// 适用场景：后台轮询、预加载、非关键数据刷新
-  Future<void> refreshInBackground() async {
-    await silentRequest<List<MyData>>(
-      request: () => apiClient.getData(),
-      onSuccess: (data) => dataList.value = data ?? [],
-    );
-  }
-
-  /// 快速请求：不显示 Loading，但显示错误
-  /// 适用场景：下拉刷新、点赞/收藏等快速操作
-  Future<void> quickRefresh() async {
-    await quickRequest<List<MyData>>(
-      request: () => apiClient.getData(),
-      onSuccess: (data) => dataList.value = data ?? [],
-    );
-  }
-
-  /// 批量请求：并发执行多个请求
-  /// 适用场景：页面初始化需要同时加载多个数据源
-  Future<void> loadMultipleData() async {
-    final results = await batchRequest<MyData>(
-      [
-        () => apiClient.getData1(),
-        () => apiClient.getData2(),
-        () => apiClient.getData3(),
-      ],
-      concurrent: true,
-      showLoading: true,
-    );
-    print('批量请求完成: ${results.length} 个结果');
-  }
-
-  /// 重试请求：失败后自动重试
-  /// 适用场景：关键数据获取、网络不稳定环境
-  Future<void> loadWithRetry() async {
-    await retryRequest<MyData>(
-      request: () => apiClient.getCriticalData(),
-      maxRetries: 3,
-      delay: Duration(seconds: 2),
-      onSuccess: (data) => print('加载成功: $data'),
-    );
-  }
-}
-```
-
-### Mixin 方法速查表
-
-| 方法 | Loading | 错误提示 | 适用场景 |
-|------|---------|---------|----------|
-| `universalRequest` | ✅ | ✅ | 普通表单提交、详情加载 |
-| `silentRequest` | ❌ | ❌ | 后台轮询、预加载 |
-| `quickRequest` | ❌ | ✅ | 下拉刷新、快速操作 |
-| `batchRequest` | ✅ | ✅ | 页面初始化多数据源 |
-| `retryRequest` | ✅ | ✅ | 关键数据、弱网环境 |
-
----
-
-## 🔧 高级用法：直接使用 KoiRequestExecutor
-
-> **适用场景**：非 Controller 类（如 Service、Repository）或需要完全自定义配置
+## 1. 初始化网络层
 
 ```dart
 import 'package:koi_network/koi_network.dart';
 
-class MyRepository {
-  /// 在非 Controller 中直接使用执行器
-  Future<List<MyData>?> fetchData() async {
-    return await KoiRequestExecutor.execute<List<MyData>>(
-      request: () => apiClient.getData(),
-      options: RequestExecutionOptions<List<MyData>>(
-        showLoading: false,  // Repository 层通常不显示 UI
-        showError: false,
-        dataNotNull: true,
+Future<void> setupNetwork() async {
+  KoiNetworkAdapters.register(
+    authAdapter: DemoAuthAdapter(),
+    errorHandlerAdapter: DemoErrorHandler(),
+    loadingAdapter: DemoLoadingAdapter(),
+    platformAdapter: KoiDefaultPlatformAdapter(),
+    loggerAdapter: KoiDefaultLoggerAdapter(),
+  );
+
+  await KoiNetworkInitializer.initialize(
+    baseUrl: 'https://api.example.com',
+    environment: 'development',
+    customHeaders: {
+      'X-App-Channel': 'debug',
+    },
+  );
+}
+```
+
+如果你已经构造好了配置对象，也可以这样初始化：
+
+```dart
+final config = KoiNetworkConfig.create(
+  baseUrl: 'https://api.example.com',
+  connectTimeout: const Duration(seconds: 30),
+  receiveTimeout: const Duration(seconds: 60),
+  enableLogging: true,
+  enableRetry: true,
+  maxRetries: 3,
+);
+
+await KoiNetworkInitializer.initializeWithConfig(config);
+```
+
+---
+
+## 2. 直接使用 `KoiRequestExecutor`
+
+适用场景：
+
+- Repository / Service 层
+- 不需要 mixin 的场景
+- 需要自定义 `RequestExecutionOptions` 的请求
+
+```dart
+import 'package:dio/dio.dart';
+import 'package:koi_network/koi_network.dart';
+
+class UserRepository {
+  UserRepository(this._dio);
+
+  final Dio _dio;
+
+  Future<User?> fetchUser() {
+    return KoiRequestExecutor.execute<User>(
+      request: () => _dio.get('/user/profile'),
+      fromJson: (json) => User.fromJson(json as Map<String, dynamic>),
+      options: const RequestExecutionOptions<User>(
+        showLoading: false,
       ),
     );
   }
 
-  /// 静默获取
-  Future<MyData?> getSilently() async {
-    return await KoiRequestExecutor.executeSilent<MyData>(
-      request: () => apiClient.getData(),
+  Future<List<Order>?> fetchOrders() {
+    return KoiRequestExecutor.execute<List<Order>>(
+      request: () => _dio.get('/orders'),
+      fromJson: (json) {
+        final list = json as List<dynamic>;
+        return list
+            .map((item) => Order.fromJson(item as Map<String, dynamic>))
+            .toList();
+      },
     );
   }
 }
 ```
 
-### 何时选择 KoiRequestExecutor？
+---
 
-| 场景 | 推荐方式 |
-|------|---------|
-| Controller 中的请求 | ✅ Mixin |
-| Repository / Service 层 | ✅ KoiRequestExecutor |
-| 需要自定义 Options 的复杂场景 | ✅ KoiRequestExecutor |
-| 静态工具方法 | ✅ NetworkRequestUtils |
+## 3. 使用 `KoiNetworkRequestMixin`
+
+适用场景：
+
+- 业务控制器
+- 需要复用统一请求模式的类
+- 希望在业务代码中快速调用 `universalRequest` / `silentRequest`
+
+```dart
+import 'package:dio/dio.dart';
+import 'package:koi_network/koi_network.dart';
+
+class UserController with KoiNetworkRequestMixin {
+  UserController(this._dio);
+
+  final Dio _dio;
+
+  Future<void> loadProfile() async {
+    await universalRequest<Map<String, dynamic>>(
+      request: () => _dio.get('/user/profile'),
+      onSuccess: (data) => print('Profile loaded: $data'),
+    );
+  }
+
+  Future<void> preloadSettings() async {
+    await silentRequest<Map<String, dynamic>>(
+      request: () => _dio.get('/settings'),
+    );
+  }
+
+  Future<void> refreshNotifications() async {
+    await quickRequest<List<dynamic>>(
+      request: () => _dio.get('/notifications'),
+    );
+  }
+}
+```
+
+### 常用方法速查
+
+| 方法 | Loading | 错误提示 | 适用场景 |
+|------|---------|----------|----------|
+| `universalRequest` | ✅ | ✅ | 普通页面请求、表单提交 |
+| `silentRequest` | ❌ | ❌ | 预加载、后台轮询 |
+| `quickRequest` | ❌ | ✅ | 下拉刷新、快速操作 |
+| `batchRequest` | ✅ | ✅ | 页面首屏并发加载 |
+| `retryRequest` | ✅ | ✅ | 关键数据获取 |
 
 ---
 
-## ⚙️ 自定义配置
+## 4. 批量请求
 
 ```dart
-final config = KoiNetworkConfig.create(
-  baseUrl: 'https://api.example.com',
-  connectTimeout: Duration(seconds: 30),
-  receiveTimeout: Duration(seconds: 60),
-  enableLogging: true,
-  enableRetry: true,
-  maxRetries: 3,
-  validateCertificate: false, // 开发环境可禁用
+final results = await KoiRequestExecutor.executeBatch<Map<String, dynamic>>(
+  [
+    () => dio.get('/user/profile'),
+    () => dio.get('/user/permissions'),
+    () => dio.get('/dashboard'),
+  ],
+  options: const BatchRequestOptions(
+    concurrent: true,
+    showLoading: true,
+  ),
 );
+```
 
-await OaNetworkService.initializeWithConfig(config);
+如果你希望某个请求失败后立即停止，可以设置：
+
+```dart
+const BatchRequestOptions(stopOnFirstError: true)
 ```
 
 ---
 
-## 🎯 最佳实践
+## 5. 强类型响应
 
-1. **Controller 中统一使用 Mixin** - 代码更简洁
-2. **Repository 层使用 KoiRequestExecutor** - 不关心 UI 反馈
-3. **下拉刷新使用 `quickRequest`** - 不需要 Loading 遮罩
-4. **后台轮询使用 `silentRequest`** - 完全静默
-5. **关键数据使用 `retryRequest`** - 提高成功率
+如果你的接口层已经返回强类型结果对象，例如 Retrofit 生成的 `BaseResult<T>`，
+可以让该对象实现 `KoiTypedResponse<T>`：
 
-## ⚠️ 注意事项
+```dart
+class BaseResult<T> implements KoiTypedResponse<T> {
+  BaseResult({
+    required this.code,
+    required this.message,
+    required this.data,
+  });
 
-1. 必须先初始化网络服务才能使用
-2. 适配器必须在初始化前注册
-3. 生产环境建议启用 SSL 证书验证
+  @override
+  final int? code;
+
+  @override
+  final String? message;
+
+  @override
+  final T? data;
+
+  @override
+  bool get isSuccess => code == 200 || code == 0;
+}
+```
+
+然后直接使用 `KoiTypedRequestExecutor`：
+
+```dart
+final user = await KoiTypedRequestExecutor.execute<User>(
+  request: () => userApi.getProfile(),
+);
+```
+
+---
+
+## 6. 多模块场景
+
+如果你的应用需要同时连接多个服务：
+
+```dart
+await KoiNetworkInitializer.initialize(
+  baseUrl: 'https://api-common.example.com',
+  key: 'main',
+);
+
+await KoiNetworkInitializer.initialize(
+  baseUrl: 'https://api-report.example.com',
+  key: 'report',
+);
+
+final reportDio = KoiNetworkServiceManager.instance.getModuleDio('report');
+```
+
+说明：
+
+- `main` 模块建议最先初始化
+- token Dio 由主模块创建并共享
+- 业务模块使用自己的 `key`
+
+---
+
+## 7. 最佳实践
+
+1. 先注册适配器，再初始化网络层。
+2. 页面/控制器场景优先使用 `KoiNetworkRequestMixin`。
+3. Repository / Service 场景优先使用 `KoiRequestExecutor`。
+4. 对已强类型化的接口，优先使用 `KoiTypedRequestExecutor`。
+5. 生产环境建议开启证书校验并谨慎控制日志开关。

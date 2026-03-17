@@ -1,195 +1,214 @@
-# Token 无感刷新使用指南
+# Token 自动刷新指南
 
 ## 概述
 
-Koi Network 实现了类似 [dio_refresh](https://github.com/iamdipanshusingh/dio_refresh) 的 **双重保护机制**，提供无感知的 Token 刷新体验：
+`koi_network` 内置了 token 自动刷新拦截器，提供两层保护：
 
-1. **主动刷新（优先）**：在请求发出前检查 Token 是否即将过期，提前刷新（用户完全无感知）
-2. **被动刷新（兜底）**：在收到 401/402 错误时触发刷新，作为兜底方案
+1. **主动刷新**  
+   在请求发出前检查 token 是否即将过期，必要时提前刷新。
 
-## 工作原理
+2. **被动刷新**  
+   当服务端返回认证错误（如 401 / 403）时，自动触发刷新并重试请求。
 
-### 主动刷新（无感知）
+这套机制默认依赖：
 
-```
-用户发起请求
-    ↓
-TokenRefreshInterceptor.onRequest
-    ↓
-检查 Token 是否即将过期（默认提前 5 分钟）
-    ↓
-是 → 主动刷新 Token → 使用新 Token 继续请求
-否 → 直接发送请求
-```
+- `KoiAuthAdapter` 提供 token 读写和刷新逻辑
+- `KoiJwtTokenMixin` 提供 JWT 到期检测能力
+- `KoiTokenRefreshInterceptor` 在请求和错误阶段自动接管刷新流程
 
-### 被动刷新（兜底）
+---
 
-```
-请求返回 401/402
-    ↓
-TokenRefreshInterceptor.onError
-    ↓
-刷新 Token
-    ↓
-重试原始请求 + 队列中的所有请求
+## 工作流程
+
+### 主动刷新
+
+```text
+请求发出前
+  -> 检查 token 是否即将过期
+  -> 若即将过期，先调用 refresh()
+  -> 刷新成功后继续原请求
 ```
 
-## 快速开始
+### 被动刷新
 
-### 1. 创建适配器（使用 JWT Mixin）
+```text
+请求返回认证错误
+  -> 触发 refresh()
+  -> 刷新成功后重试原请求
+  -> 刷新失败时交给错误处理适配器
+```
+
+---
+
+## 1. 实现认证适配器
+
+推荐在 JWT 场景下让认证适配器混入 `KoiJwtTokenMixin`：
 
 ```dart
 import 'package:koi_network/koi_network.dart';
 
-class MyAuthAdapter extends KoiAuthAdapter with KoiJwtTokenMixin {
-  @override
-  String? getToken() {
-    return UserStore.to.token.value;
-  }
+class DemoAuthAdapter extends KoiAuthAdapter with KoiJwtTokenMixin {
+  String? _token;
+  String? _refreshToken;
 
   @override
-  String? getRefreshToken() {
-    return UserStore.to.refreshToken.value;
-  }
+  String? getToken() => _token;
+
+  @override
+  String? getRefreshToken() => _refreshToken;
 
   @override
   Future<bool> refresh() async {
     try {
-      // 使用 TokenDio 避免循环依赖
       final dio = KoiDioFactory.createTokenDio(null);
-      final response = await dio.post('/auth/refresh', data: {
-        'refresh_token': getRefreshToken(),
-      });
+      final response = await dio.post(
+        '/auth/refresh',
+        data: {'refresh_token': getRefreshToken()},
+      );
 
-      // 保存新 Token
-      await saveToken(response.data['access_token']);
-      await saveRefreshToken(response.data['refresh_token']);
+      final accessToken = response.data['access_token'] as String?;
+      if (accessToken == null || accessToken.isEmpty) {
+        return false;
+      }
 
+      await saveToken(accessToken);
       return true;
-    } catch (e) {
+    } catch (_) {
       return false;
     }
   }
 
   @override
   Future<void> saveToken(String token) async {
-    await UserStore.to.setToken(token);
+    _token = token;
   }
 
   @override
   Future<void> saveRefreshToken(String refreshToken) async {
-    await UserStore.to.setRefreshToken(refreshToken);
+    _refreshToken = refreshToken;
   }
 
   @override
   Future<void> clearToken() async {
-    await UserStore.to.clearToken();
+    _token = null;
+    _refreshToken = null;
   }
 }
 ```
 
-### 2. 配置网络（启用主动刷新）
+---
+
+## 2. 注册适配器并初始化
+
+先注册适配器，再初始化网络层。
+
+如果你只需要默认的刷新阈值，可以直接使用 `initialize`：
+
+```dart
+KoiNetworkAdapters.register(
+  authAdapter: DemoAuthAdapter(),
+  errorHandlerAdapter: DemoErrorHandler(),
+  loadingAdapter: DemoLoadingAdapter(),
+  platformAdapter: KoiDefaultPlatformAdapter(),
+);
+
+await KoiNetworkInitializer.initialize(
+  baseUrl: 'https://api.example.com',
+  enableProactiveTokenRefresh: true,
+  tokenRefreshWhiteList: ['/auth/login', '/auth/refresh'],
+);
+```
+
+如果你需要自定义刷新阈值，使用配置对象：
 
 ```dart
 final config = KoiNetworkConfig.create(
   baseUrl: 'https://api.example.com',
-  enableProactiveTokenRefresh: true,  // 启用主动刷新（默认 true）
-  tokenRefreshThreshold: const Duration(minutes: 5),  // 提前 5 分钟刷新（默认）
+  enableProactiveTokenRefresh: true,
+  tokenRefreshThreshold: const Duration(minutes: 10),
+  tokenRefreshWhiteList: ['/auth/login', '/auth/refresh'],
 );
 
-await KoiNetworkInitializer.initialize(
-  config: config,
-  authAdapter: MyAuthAdapter(),
-  // ... 其他适配器
+await KoiNetworkInitializer.initializeWithConfig(config);
+```
+
+---
+
+## 3. 使用方式
+
+初始化完成后，请求层不需要额外处理 refresh：
+
+```dart
+final user = await KoiRequestExecutor.execute<Map<String, dynamic>>(
+  request: () => dio.get('/user/profile'),
 );
 ```
 
-### 3. 使用（完全透明）
+如果 token 即将过期，拦截器会在请求发出前自动刷新。
+如果服务端返回认证错误，拦截器会尝试刷新并重试请求。
+
+---
+
+## 4. `KoiJwtTokenMixin` 提供的能力
+
+`KoiJwtTokenMixin` 当前提供以下公开方法：
 
 ```dart
-// 正常发起请求，Token 会自动刷新
-final result = await api.getUserInfo();
+final expired = adapter.isTokenExpired();
+final expiringSoon = adapter.isTokenExpiringSoon();
+final expiration = adapter.getTokenExpiration();
 ```
 
-## JWT Token 解析
-
-`KoiJwtTokenMixin` 提供了以下能力：
+如果你想自己计算剩余有效时间，可以这样写：
 
 ```dart
-// 获取 Token 过期时间（Unix 时间戳）
-int? exp = adapter.getTokenExpiration();
-
-// 检查是否已过期
-bool expired = adapter.isTokenExpired();
-
-// 检查是否即将过期（默认 5 分钟）
-bool expiringSoon = adapter.isTokenExpiringSoon();
-
-// 获取剩余有效时间
-Duration? remaining = adapter.getTokenRemainingTime();
+final expiration = adapter.getTokenExpiration();
+final remaining = expiration?.difference(DateTime.now().toUtc());
 ```
 
-## 高级配置
+---
 
-### 自定义刷新阈值
+## 5. 非 JWT 场景
+
+当前**主动刷新**依赖 `KoiJwtTokenMixin` 的过期检测能力。
+
+这意味着：
+
+- 如果你使用 JWT，推荐直接混入 `KoiJwtTokenMixin`
+- 如果你不使用 JWT，仍然可以保留**被动刷新**
+- 如果你不使用 JWT，建议关闭主动刷新，避免无意义的前置检测
 
 ```dart
 final config = KoiNetworkConfig.create(
-  tokenRefreshThreshold: const Duration(minutes: 10),  // 提前 10 分钟刷新
+  baseUrl: 'https://api.example.com',
+  enableProactiveTokenRefresh: false,
 );
 ```
 
-### 禁用主动刷新（仅使用被动刷新）
+---
 
-```dart
-final config = KoiNetworkConfig.create(
-  enableProactiveTokenRefresh: false,  // 禁用主动刷新
-);
-```
+## 6. 最佳实践
 
-### 非 JWT Token 支持
+1. 在 `refresh()` 中始终使用 `KoiDioFactory.createTokenDio(null)`，避免刷新请求再次进入完整拦截器链。
+2. 将登录、刷新接口加入 `tokenRefreshWhiteList`。
+3. 对 JWT 场景优先使用 `KoiJwtTokenMixin`。
+4. 刷新失败时返回 `false`，让拦截器进入统一错误处理流程。
+5. 在 `KoiErrorHandlerAdapter.handleAuthError()` 中实现登出、跳转登录页等全局动作。
 
-如果你的项目不使用 JWT Token，可以覆盖相关方法：
-
-```dart
-class MyAuthAdapter extends KoiAuthAdapter {
-  @override
-  bool isTokenExpiringSoon({Duration threshold = const Duration(minutes: 5)}) {
-    // 自定义过期检查逻辑
-    final expiryTime = _getExpiryTimeFromCustomStorage();
-    return DateTime.now().add(threshold).isAfter(expiryTime);
-  }
-
-  // 不使用 KoiJwtTokenMixin
-}
-```
-
-## 最佳实践
-
-1. **使用 JWT Token**：推荐使用 JWT Token，可以自动解析过期时间
-2. **合理设置阈值**：根据业务场景设置合适的刷新阈值（默认 5 分钟）
-3. **使用 TokenDio**：在 `refresh()` 方法中使用 `KoiDioFactory.createTokenDio(null)` 避免循环依赖
-4. **错误处理**：在 `refresh()` 中捕获异常并返回 false，让被动刷新兜底
-
-## 对比 dio_refresh
-
-| 特性 | Koi Network | dio_refresh |
-|------|-----------|-------------|
-| 主动刷新 | ✅ | ✅ |
-| 被动刷新 | ✅ | ✅ |
-| JWT 自动解析 | ✅ | ❌ |
-| 并发请求队列 | ✅ | ✅ |
-| 配置化 | ✅ | ❌ |
-| 适配器模式 | ✅ | ❌ |
+---
 
 ## 常见问题
 
-### Q: Token 刷新失败怎么办？
-A: 主动刷新失败会继续发送请求，如果返回 401，被动刷新会兜底。如果被动刷新也失败，会调用 `ErrorHandlerAdapter.handleAuthError()`。
+### 刷新失败会发生什么？
 
-### Q: 如何调试刷新逻辑？
-A: 在开发环境下，拦截器会输出详细日志，包括刷新触发时机、剩余时间等。
+主动刷新失败时，请求会继续执行；如果后续返回认证错误，被动刷新会再次兜底。
+如果被动刷新仍失败，错误会交给 `KoiErrorHandlerAdapter.handleAuthError()`。
 
-### Q: 刷新期间的并发请求如何处理？
-A: 所有并发请求会被加入队列，刷新成功后统一使用新 Token 重试。
+### 并发请求如何处理？
+
+刷新期间，后续需要 token 的请求会等待刷新结果，刷新成功后统一继续或重试。
+
+### 为什么要单独使用 token Dio？
+
+因为刷新请求不应该再次进入完整的认证、刷新和错误处理链，否则容易形成循环依赖。
 

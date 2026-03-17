@@ -1,173 +1,347 @@
 # Koi Network
 
-Enterprise-grade network library built on Dio with configurable response parsing, request encoding, token refresh, retry, caching, and adapter-based architecture.
-
 [![pub package](https://img.shields.io/pub/v/koi_network.svg)](https://pub.dev/packages/koi_network)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-## Features
+A flexible Dio-based networking library for Dart and Flutter projects.
 
-- ✅ **Adapter Architecture** — Decoupled from project-specific dependencies via pluggable adapters
-- ✅ **Configurable Response Parsing** — Works with any JSON envelope (`{code,msg,data}`, `{rs,error}`, etc.)
-- ✅ **Smart Token Refresh** — Proactive (pre-expiry) + Reactive (on 401) dual protection
-- ✅ **Retry & Caching** — Powered by `dio_smart_retry` and `dio_cache_interceptor`
-- ✅ **Request Executor** — Unified execute/silent/quick/batch/retry patterns
-- ✅ **Type Safety** — Full generics support with optional `fromJson` callbacks
-- ✅ **Easy Testing** — Mock-friendly adapter design
+`koi_network` provides a reusable network layer with adapter-based integration,
+configurable response parsing, request execution helpers, token refresh,
+retry, caching, and multi-module Dio management.
 
-## Quick Start
+## Why Koi Network
 
-### 1. Add Dependency
+Many projects need the same network capabilities, but do not want to bind the
+network layer to a specific UI framework, state management solution, or backend
+response format.
+
+`koi_network` solves that by separating infrastructure from project-specific
+logic:
+
+- Adapter-based auth, loading, error handling, platform, logging, parsing, and request encoding
+- Works with custom response envelopes such as `{code, msg, data}` or other backend formats
+- Built-in request execution patterns for normal, silent, quick, batch, and retry flows
+- Proactive and reactive token refresh support
+- Optional retry and cache support through Dio middleware
+- Support for both raw Dio responses and already typed API wrappers
+
+## Installation
+
+Add the package to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
   koi_network: ^0.0.1
 ```
 
-### 2. Implement Adapters
+Then install dependencies:
+
+```bash
+dart pub get
+```
+
+If you use Flutter, `flutter pub get` also works.
+
+## Minimal Setup
+
+The smallest working setup is:
+
+1. Register adapters
+2. Initialize the network layer
+3. Get a Dio instance and make requests
 
 ```dart
-// Auth adapter (supports JWT Token auto-refresh)
+import 'package:koi_network/koi_network.dart';
+
+Future<void> setupNetwork() async {
+  KoiNetworkAdapters.register(
+    authAdapter: KoiDefaultAuthAdapter(),
+    errorHandlerAdapter: KoiDefaultErrorHandlerAdapter(),
+    loadingAdapter: KoiDefaultLoadingAdapter(),
+    platformAdapter: KoiDefaultPlatformAdapter(),
+    loggerAdapter: KoiDefaultLoggerAdapter(),
+  );
+
+  await KoiNetworkInitializer.initialize(
+    baseUrl: 'https://api.example.com',
+    environment: 'development',
+  );
+}
+```
+
+After initialization:
+
+```dart
+final dio = KoiNetworkServiceManager.instance.mainDio;
+
+final profile = await KoiRequestExecutor.execute<Map<String, dynamic>>(
+  request: () => dio.get('/user/profile'),
+);
+```
+
+## Custom Adapters
+
+In real projects, you usually replace the default adapters with application
+implementations.
+
+Example auth adapter with JWT support:
+
+```dart
+import 'package:dio/dio.dart';
+import 'package:koi_network/koi_network.dart';
+
 class MyAuthAdapter extends KoiAuthAdapter with KoiJwtTokenMixin {
+  String? _token;
+  String? _refreshToken;
+
   @override
-  String? getToken() => UserStore.to.token;
+  String? getToken() => _token;
+
+  @override
+  String? getRefreshToken() => _refreshToken;
 
   @override
   Future<bool> refresh() async {
-    final dio = KoiDioFactory.createTokenDio(null);
-    final response = await dio.post('/auth/refresh',
-      data: {'refresh_token': getRefreshToken()},
-    );
-    await saveToken(response.data['access_token']);
-    return true;
+    try {
+      final dio = KoiDioFactory.createTokenDio(null);
+      final response = await dio.post(
+        '/auth/refresh',
+        data: {'refresh_token': getRefreshToken()},
+      );
+
+      final accessToken = response.data['access_token'] as String?;
+      if (accessToken == null || accessToken.isEmpty) {
+        return false;
+      }
+
+      await saveToken(accessToken);
+      return true;
+    } catch (_) {
+      return false;
+    }
   }
 
   @override
-  Future<void> saveToken(String token) async =>
-      UserStore.to.setToken(token);
+  Future<void> saveToken(String token) async {
+    _token = token;
+  }
 
   @override
-  Future<void> clearToken() async => UserStore.to.clearToken();
+  Future<void> saveRefreshToken(String refreshToken) async {
+    _refreshToken = refreshToken;
+  }
+
+  @override
+  Future<void> clearToken() async {
+    _token = null;
+    _refreshToken = null;
+  }
 }
 
-// Error handler adapter
-class MyErrorHandler implements KoiErrorHandlerAdapter {
+class MyErrorHandler extends KoiErrorHandlerAdapter {
   @override
-  void showError(String message) => print('Error: $message');
+  void showError(String message) {
+    print('Error: $message');
+  }
 
   @override
   Future<bool> handleAuthError({int? statusCode, String? message}) async {
-    // Navigate to login...
+    // For example: clear session and redirect to login
     return true;
   }
 
   @override
-  String formatErrorMessage(DioException error) => error.message ?? error.toString();
-
-  @override
-  void showSuccess(String message) {}
-  @override
-  void showWarning(String message) {}
-  @override
-  void showInfo(String message) {}
+  String formatErrorMessage(DioException error) {
+    return error.message ?? error.toString();
+  }
 }
 ```
 
-### 3. Register & Initialize
+## Request Execution
+
+`KoiRequestExecutor` is the main entry point for standard Dio requests.
+
+### Parse JSON into a model
 
 ```dart
-void main() async {
-  // 1. Register adapters
-  KoiNetworkAdapters.register(
-    authAdapter: MyAuthAdapter(),
-    errorHandlerAdapter: MyErrorHandler(),
-    loadingAdapter: MyLoadingAdapter(),
-    platformAdapter: KoiDefaultPlatformAdapter(),
-  );
-
-  // 2. Initialize
-  await KoiNetworkInitializer.initialize(
-    baseUrl: 'https://api.example.com',
-    environment: 'production',
-  );
-
-  runApp(MyApp());
-}
-```
-
-### 4. Make Requests
-
-```dart
-// Simple request
 final user = await KoiRequestExecutor.execute<User>(
-  request: () => dio.get('/user/1'),
-  fromJson: (json) => User.fromJson(json),
-);
-
-// Silent request (no loading/error UI)
-final data = await KoiRequestExecutor.executeSilent<MyData>(
-  request: () => dio.get('/data'),
-);
-
-// Batch request
-final results = await KoiRequestExecutor.executeBatch<Item>(
-  [() => dio.get('/item/1'), () => dio.get('/item/2')],
-  fromJson: (json) => Item.fromJson(json),
+  request: () => dio.get('/user/profile'),
+  fromJson: (json) => User.fromJson(json as Map<String, dynamic>),
 );
 ```
 
-### 5. Using the Mixin
+### Silent request
 
 ```dart
-class MyController with KoiNetworkRequestMixin {
-  Future<void> loadData() async {
-    final data = await universalRequest<MyData>(
-      request: () => apiClient.getData(),
-      onSuccess: (data) => print('Success: $data'),
+final settings = await KoiRequestExecutor.executeSilent<Map<String, dynamic>>(
+  request: () => dio.get('/settings'),
+);
+```
+
+### Quick request
+
+```dart
+final notifications = await KoiRequestExecutor.executeQuick<List<dynamic>>(
+  request: () => dio.get('/notifications'),
+);
+```
+
+### Batch request
+
+```dart
+final results = await KoiRequestExecutor.executeBatch<Map<String, dynamic>>(
+  [
+    () => dio.get('/user/profile'),
+    () => dio.get('/user/permissions'),
+    () => dio.get('/dashboard'),
+  ],
+  options: const BatchRequestOptions(
+    concurrent: true,
+    showLoading: true,
+  ),
+);
+```
+
+### Retry at the application layer
+
+```dart
+final criticalData = await KoiRequestExecutor.executeWithRetry<MyData>(
+  request: () => dio.get('/critical-data'),
+  fromJson: (json) => MyData.fromJson(json as Map<String, dynamic>),
+  maxRetries: 3,
+  delay: const Duration(seconds: 2),
+);
+```
+
+## Use the Mixin
+
+For controllers or business classes that repeatedly issue requests,
+`KoiNetworkRequestMixin` provides a simpler API.
+
+```dart
+import 'package:dio/dio.dart';
+import 'package:koi_network/koi_network.dart';
+
+class UserController with KoiNetworkRequestMixin {
+  UserController(this._dio);
+
+  final Dio _dio;
+
+  Future<void> loadProfile() async {
+    await universalRequest<Map<String, dynamic>>(
+      request: () => _dio.get('/user/profile'),
+      onSuccess: (data) => print('Profile: $data'),
     );
   }
 }
+```
+
+Common helpers:
+
+- `universalRequest`
+- `silentRequest`
+- `quickRequest`
+- `batchRequest`
+- `retryRequest`
+
+## Typed Response Support
+
+If your API layer already returns typed response wrappers, implement
+`KoiTypedResponse<T>` and use `KoiTypedRequestExecutor`.
+
+```dart
+class BaseResult<T> implements KoiTypedResponse<T> {
+  BaseResult({
+    required this.code,
+    required this.message,
+    required this.data,
+  });
+
+  @override
+  final int? code;
+
+  @override
+  final String? message;
+
+  @override
+  final T? data;
+
+  @override
+  bool get isSuccess => code == 200 || code == 0;
+}
+```
+
+```dart
+final user = await KoiTypedRequestExecutor.execute<User>(
+  request: () => userApi.getProfile(),
+);
+```
+
+## Token Refresh
+
+`koi_network` supports two refresh paths:
+
+- Proactive refresh before token expiration
+- Reactive refresh after authentication failures
+
+Recommended JWT setup:
+
+- implement `KoiAuthAdapter`
+- mix in `KoiJwtTokenMixin`
+- use `KoiDioFactory.createTokenDio(null)` inside `refresh()`
+- add login and refresh endpoints to `tokenRefreshWhiteList`
+
+Example:
+
+```dart
+await KoiNetworkInitializer.initialize(
+  baseUrl: 'https://api.example.com',
+  enableProactiveTokenRefresh: true,
+  tokenRefreshWhiteList: ['/auth/login', '/auth/refresh'],
+);
 ```
 
 ## Multi-Module Support
 
+You can initialize more than one backend module in the same app.
+
 ```dart
-// Initialize multiple backend modules
 await KoiNetworkInitializer.initialize(
   baseUrl: 'https://api-common.example.com',
   key: 'main',
 );
+
 await KoiNetworkInitializer.initialize(
-  baseUrl: 'https://api-hs.example.com',
-  key: 'highSchool',
+  baseUrl: 'https://api-orders.example.com',
+  key: 'orders',
 );
 
-// Access a specific module's Dio
-final hsDio = KoiNetworkServiceManager.instance.getModuleDio('highSchool');
+final ordersDio =
+    KoiNetworkServiceManager.instance.getModuleDio('orders');
 ```
 
-## Architecture
+## Main Public APIs
 
-```
-koi_network/
-├── adapters/       # Pluggable adapter interfaces
-├── config/         # Network configuration
-├── core/           # Dio factory & service manager
-├── executors/      # Request executor
-├── interceptors/   # Auth, token refresh, error handling
-├── mixins/         # Controller convenience mixin
-├── models/         # Request execution options
-└── utils/          # JWT decoder
-```
+- `KoiNetworkAdapters`
+- `KoiNetworkInitializer`
+- `KoiNetworkServiceManager`
+- `KoiRequestExecutor`
+- `KoiTypedRequestExecutor`
+- `KoiNetworkRequestMixin`
+- `KoiNetworkConfig`
+- `KoiAuthAdapter`
+- `KoiResponseParser`
+- `KoiRequestEncoder`
 
 ## Documentation
 
-- **[Quick Start](doc/QUICK_START.md)** — 5-minute setup guide
-- **[Usage Examples](doc/USAGE_EXAMPLE.md)** — Complete examples
-- **[Tech Stack](doc/TECH_STACK.md)** — Technology choices explained
-- **[Token Refresh Guide](doc/TOKEN_REFRESH_GUIDE.md)** — Token refresh flow
-- **[Testing Guide](doc/TESTING_GUIDE.md)** — Testing best practices
+- [Quick Start](doc/QUICK_START.md)
+- [Usage Examples](doc/USAGE_EXAMPLE.md)
+- [Token Refresh Guide](doc/TOKEN_REFRESH_GUIDE.md)
+- [Testing Guide](doc/TESTING_GUIDE.md)
+- [Tech Stack](doc/TECH_STACK.md)
+- [Changelog](CHANGELOG.md)
 
 ## License
 
-MIT — see [LICENSE](LICENSE) for details.
+MIT. See [LICENSE](LICENSE).

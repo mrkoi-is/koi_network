@@ -1,102 +1,53 @@
 # Koi Network 文档索引
 
-## 📚 文档导航
+## 概览
 
-### 🚀 快速开始
+`README` 是面向 `pub.dev` 用户的主入口文档，偏英文说明。
+`doc/` 目录用于补充中文使用指南、示例和设计说明。
 
-1. **[README.md](README.md)** - 主要使用文档 ⭐
-   - 功能特性
-   - 安装配置
-   - 适配器实现
-   - 基础使用
-   - API 参考
+## 推荐阅读
 
-2. **[QUICK_START.md](QUICK_START.md)** - 5 分钟快速上手 ⚡
-   - 添加依赖
-   - 实现适配器
-   - 注册和初始化
-   - Controller 使用
+1. **[../README.md](../README.md)**  
+   适合第一次接触包的开发者，包含功能概览、安装方式和基础示例。
 
-3. **[USAGE_EXAMPLE.md](USAGE_EXAMPLE.md)** - 完整使用示例
-   - 初始化配置
-   - Controller 使用
-   - 最佳实践
+2. **[QUICK_START.md](QUICK_START.md)**  
+   适合希望快速完成接入的项目，包含最小可运行接入步骤。
 
----
+3. **[USAGE_EXAMPLE.md](USAGE_EXAMPLE.md)**  
+   展示初始化、请求执行、mixin、强类型请求和多模块场景。
 
-### 🔧 技术文档
+4. **[TOKEN_REFRESH_GUIDE.md](TOKEN_REFRESH_GUIDE.md)**  
+   解释 JWT token 自动刷新、白名单配置和常见注意事项。
 
-4. **[TOKEN_REFRESH_GUIDE.md](TOKEN_REFRESH_GUIDE.md)** - Token 无感刷新指南 ⭐
-   - 主动刷新机制
-   - 被动刷新机制
-   - JWT Token 支持
-   - 使用示例
+5. **[TECH_STACK.md](TECH_STACK.md)**  
+   解释核心依赖、架构取舍和当前实现策略。
 
-5. **[TECH_STACK.md](TECH_STACK.md)** - 技术选型说明
-   - 为什么选择 dio_cache_interceptor
-   - 为什么选择 dio_smart_retry
-   - 技术对比分析
-   - 选型原则
+6. **[TESTING_GUIDE.md](TESTING_GUIDE.md)**  
+   说明如何在本地运行测试、生成覆盖率以及编写新测试。
 
-6. **[TESTING_GUIDE.md](TESTING_GUIDE.md)** - 测试指南
-   - 测试覆盖情况
-   - 运行测试
-   - 编写测试
+7. **[../CHANGELOG.md](../CHANGELOG.md)**  
+   查看版本演进和发布记录。
 
----
+## 按场景查找
 
-### 📝 其他文档
+### 我想快速接入
+阅读 [QUICK_START.md](QUICK_START.md)。
 
-7. **[CHANGELOG.md](CHANGELOG.md)** - 变更日志
-   - 版本历史
-   - 功能更新
-   - Bug 修复
+### 我想先看完整能力边界
+先看 [../README.md](../README.md)，再看 [USAGE_EXAMPLE.md](USAGE_EXAMPLE.md)。
 
----
+### 我想了解 token 自动刷新
+阅读 [TOKEN_REFRESH_GUIDE.md](TOKEN_REFRESH_GUIDE.md)。
 
-## 🎯 按场景查找文档
+### 我想确认设计是否适合我的项目
+阅读 [TECH_STACK.md](TECH_STACK.md)。
 
-### 我是新手，想快速上手
-→ 阅读 [QUICK_START.md](QUICK_START.md)
+### 我想验证包质量或参与维护
+阅读 [TESTING_GUIDE.md](TESTING_GUIDE.md)。
 
-### 我想了解所有功能
-→ 阅读 [README.md](README.md)
+## 维护建议
 
-### 我想看完整的使用示例
-→ 阅读 [USAGE_EXAMPLE.md](USAGE_EXAMPLE.md)
-
-### 我想了解 Token 无感刷新
-→ 阅读 [TOKEN_REFRESH_GUIDE.md](TOKEN_REFRESH_GUIDE.md)
-
-### 我想了解为什么选择这些技术
-→ 阅读 [TECH_STACK.md](TECH_STACK.md)
-
----
-
-## 📖 推荐阅读顺序
-
-### 初学者
-1. [QUICK_START.md](QUICK_START.md) - 5 分钟快速上手
-2. [README.md](README.md) - 了解全部功能
-3. [USAGE_EXAMPLE.md](USAGE_EXAMPLE.md) - 学习使用示例
-
-### 进阶用户
-1. [README.md](README.md) - 全面了解
-2. [TOKEN_REFRESH_GUIDE.md](TOKEN_REFRESH_GUIDE.md) - Token 无感刷新
-3. [TECH_STACK.md](TECH_STACK.md) - 理解技术选型
-
----
-
-## 🔗 外部资源
-
-### 依赖库文档
-- [Dio](https://pub.dev/packages/dio) - HTTP 客户端
-- [dio_cache_interceptor](https://pub.dev/packages/dio_cache_interceptor) - 缓存方案
-- [dio_smart_retry](https://pub.dev/packages/dio_smart_retry) - 重试机制
-
----
-
-## 🎉 开始使用
-
-现在就开始阅读 [QUICK_START.md](QUICK_START.md)，5 分钟快速上手 Koi Network。
+- `README` 保持为对外主说明，优先保证英文可读性。
+- `doc/` 里的示例应始终使用当前真实存在的公开 API。
+- 若新增功能，请同步更新 `README`、对应专题文档和 `CHANGELOG`。
 
