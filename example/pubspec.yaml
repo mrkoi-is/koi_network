@@ -1,0 +1,10 @@
+name: example
+description: An example demonstrating how to use koi_network.
+publish_to: 'none'
+environment:
+  sdk: "^3.9.2"
+
+dependencies:
+  koi_network:
+    path: ../
+  dio: ^5.8.0

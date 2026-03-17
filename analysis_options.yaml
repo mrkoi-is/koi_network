@@ -1,0 +1,22 @@
+include: package:very_good_analysis/analysis_options.yaml
+
+analyzer:
+  exclude:
+    - "**/*.g.dart"
+    - "**/*.freezed.dart"
+    - "test/**"  # 测试文件排除文档注释规则
+    - "example/**"  # 示例文件排除文档注释规则
+
+linter:
+  rules:
+    # 项目宽松规则
+    lines_longer_than_80_chars: false
+    public_member_api_docs: true  # 开启公共 API 文档注释
+    
+    # 网络库特殊规则 - 与 Dio 等第三方库兼容
+    avoid_catches_without_on_clauses: false  # 网络层需要捕获所有异常
+    cascade_invocations: false  # 链式调用不强制
+    avoid_dynamic_calls: false  # 处理 JSON 响应需要 dynamic
+    no_default_cases: false  # switch 允许 default
+    avoid_equals_and_hash_code_on_mutable_classes: false
+    

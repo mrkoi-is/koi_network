@@ -1,0 +1,19 @@
+# Dart/Flutter
+.dart_tool/
+build/
+pubspec.lock
+
+# Coverage
+coverage/
+
+# IDE
+*.iml
+.idea/
+.vscode/
+
+# macOS
+.DS_Store
+
+# Flutter (this is a pure Dart package)
+.flutter-plugins
+.flutter-plugins-dependencies
