@@ -3,7 +3,7 @@ description: >
   Enterprise-grade network library built on Dio with configurable response
   parsing, request encoding, token refresh, retry, caching, and adapter-based
   architecture.
-version: 0.2.0
+version: 0.0.1
 homepage: https://github.com/mrkoi-is/koi_network
 repository: https://github.com/mrkoi-is/koi_network
 issue_tracker: https://github.com/mrkoi-is/koi_network/issues

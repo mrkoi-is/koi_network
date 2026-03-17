@@ -10,7 +10,7 @@
 
 ```yaml
 dependencies:
-  koi_network: ^0.2.0
+  koi_network: ^0.0.1
 ```
 
 运行：

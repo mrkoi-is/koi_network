@@ -21,7 +21,7 @@ Enterprise-grade network library built on Dio with configurable response parsing
 
 ```yaml
 dependencies:
-  koi_network: ^0.2.0
+  koi_network: ^0.0.1
 ```
 
 ### 2. Implement Adapters
