@@ -4,36 +4,36 @@ import 'package:koi_network/src/config/network_config.dart';
 import 'package:koi_network/src/core/dio_factory.dart';
 import 'package:koi_network/src/koi_network_constants.dart';
 
-/// Koi 网络服务管理器
-/// Koi Network Service Manager
+/// Koi 网络服务管理器。
+/// Singleton manager for Koi Network services.
 ///
-/// 单例模式管理网络服务
-/// Manages network services as a singleton
+/// 使用单例模式统一管理网络服务和 Dio 实例。
+/// Manages network services and Dio instances through a singleton.
 class KoiNetworkServiceManager {
-  /// 获取单例实例
-  /// Get singleton instance
+  /// 获取单例实例。
+  /// Returns the singleton instance.
   factory KoiNetworkServiceManager() => _instance;
   KoiNetworkServiceManager._internal();
   static final KoiNetworkServiceManager _instance =
       KoiNetworkServiceManager._internal();
 
-  /// 获取静态单例实例
-  /// Get static singleton instance
+  /// 获取静态单例实例。
+  /// Returns the static singleton instance.
   static KoiNetworkServiceManager get instance => _instance;
 
   KoiNetworkConfig? _config;
   bool _isInitialized = false;
 
-  /// 是否已初始化
-  /// Check if initialized
+  /// 当前是否已初始化。
+  /// Returns whether the service has been initialized.
   bool get isInitialized => _isInitialized;
 
-  /// 获取配置
-  /// Get configuration
+  /// 获取当前配置。
+  /// Returns the current network configuration.
   KoiNetworkConfig? get config => _config;
 
-  /// 获取特定模块的 Dio 实例，默认 'main'
-  /// Get Dio instance for a specific module, default 'main'
+  /// 获取指定模块的 Dio 实例，默认使用 `main`。
+  /// Returns the Dio instance for a specific module, defaulting to `main`.
   Dio getModuleDio([String key = 'main']) {
     final dio = KoiDioFactory.getInstance(key);
     if (dio == null) {
@@ -44,19 +44,19 @@ class KoiNetworkServiceManager {
     return dio;
   }
 
-  /// 获取主 Dio 实例 (向后兼容)
-  /// Get main Dio instance (backward compatible)
+  /// 获取主 Dio 实例，保留向后兼容。
+  /// Returns the main Dio instance for backward compatibility.
   Dio get mainDio => getModuleDio();
 
-  /// 获取共享的 Token Dio 实例 (向后兼容)
-  /// Get shared Token Dio instance (backward compatible)
+  /// 获取共享的 token Dio 实例，保留向后兼容。
+  /// Returns the shared token Dio instance for backward compatibility.
   ///
   /// 所有模块共用同一个 token dio，因为使用相同的认证系统
   /// All modules share the same token dio, because they use the same authentication system
   Dio get tokenDio => getModuleDio('token');
 
-  /// 初始化网络服务
-  /// Initialize network service
+  /// 初始化网络服务。
+  /// Initializes the network service.
   Future<void> initialize({
     KoiNetworkConfig? config,
     String key = 'main',
@@ -115,8 +115,8 @@ class KoiNetworkServiceManager {
     }
   }
 
-  /// 重新初始化
-  /// Reinitialize
+  /// 重新初始化网络服务。
+  /// Reinitializes the network service.
   Future<void> reinitialize({
     KoiNetworkConfig? config,
     String key = 'main',
@@ -130,8 +130,8 @@ class KoiNetworkServiceManager {
     await initialize(config: config, key: key);
   }
 
-  /// 更新配置
-  /// Update configuration
+  /// 更新配置。
+  /// Updates the configuration for a module.
   Future<void> updateConfig(
     KoiNetworkConfig config, {
     String key = 'main',
@@ -155,8 +155,8 @@ class KoiNetworkServiceManager {
     }
   }
 
-  /// 获取服务状态
-  /// Get service status
+  /// 获取服务状态。
+  /// Returns the current service status.
   Map<String, dynamic> getStatus() {
     return {
       'isInitialized': _isInitialized,
@@ -166,8 +166,8 @@ class KoiNetworkServiceManager {
     };
   }
 
-  /// 打印服务状态
-  /// Print service status
+  /// 打印服务状态。
+  /// Logs the current service status.
   void printStatus() {
     if (KoiNetworkConstants.debugEnabled) {
       final status = getStatus();
@@ -175,8 +175,8 @@ class KoiNetworkServiceManager {
     }
   }
 
-  /// 清理资源
-  /// Dispose resources
+  /// 清理资源。
+  /// Disposes all managed resources.
   void dispose() {
     // 清理所有 Dio 实例（由工厂统一管理）
     // Dispose all Dio instances (centrally managed by factory)

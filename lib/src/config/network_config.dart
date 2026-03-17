@@ -1,10 +1,15 @@
-/// Koi 网络配置
-///
-/// 统一管理网络请求的配置参数
+/// Koi 网络配置。
+/// Network configuration definitions for Koi Network.
 library;
 
 import 'package:koi_network/src/adapters/network_adapters.dart';
 
+/// Koi 网络配置对象。
+/// Configuration object for Koi Network.
+///
+/// 提供创建、生产、测试等场景的统一网络参数配置。
+/// Provides a unified set of network parameters for custom, production,
+/// testing, and development scenarios.
 class KoiNetworkConfig {
   const KoiNetworkConfig._({
     required this.baseUrl,
@@ -26,7 +31,8 @@ class KoiNetworkConfig {
     required this.tokenRefreshWhiteList,
   });
 
-  /// 创建自定义配置
+  /// 创建自定义配置。
+  /// Creates a custom network configuration.
   factory KoiNetworkConfig.create({
     String? baseUrl,
     Duration? connectTimeout,
@@ -72,7 +78,8 @@ class KoiNetworkConfig {
     );
   }
 
-  /// 测试环境配置
+  /// 创建测试环境配置。
+  /// Creates a configuration for testing environments.
   factory KoiNetworkConfig.testing({
     String? baseUrl,
     Map<String, String>? customHeaders,
@@ -97,7 +104,8 @@ class KoiNetworkConfig {
     );
   }
 
-  /// 生产环境配置
+  /// 创建生产环境配置。
+  /// Creates a configuration for production environments.
   factory KoiNetworkConfig.production({
     String? baseUrl,
     Map<String, String>? customHeaders,
@@ -123,7 +131,8 @@ class KoiNetworkConfig {
     );
   }
 
-  /// 开发环境配置
+  /// 创建开发环境配置。
+  /// Creates a configuration for development environments.
   factory KoiNetworkConfig.development({
     String? baseUrl,
     Map<String, String>? customHeaders,
@@ -148,58 +157,76 @@ class KoiNetworkConfig {
     );
   }
 
-  /// 基础 URL
+  /// 基础 URL。
+  /// Base URL for API requests.
   final String baseUrl;
 
-  /// 连接超时
+  /// 连接超时。
+  /// Connection timeout duration.
   final Duration connectTimeout;
 
-  /// 接收超时
+  /// 接收超时。
+  /// Receive timeout duration.
   final Duration receiveTimeout;
 
-  /// 发送超时
+  /// 发送超时。
+  /// Send timeout duration.
   final Duration sendTimeout;
 
-  /// 是否启用日志
+  /// 是否启用日志。
+  /// Whether request logging is enabled.
   final bool enableLogging;
 
-  /// 是否启用重试
+  /// 是否启用重试。
+  /// Whether automatic retries are enabled.
   final bool enableRetry;
 
-  /// 最大重试次数
+  /// 最大重试次数。
+  /// Maximum retry count.
   final int maxRetries;
 
-  /// 重试延迟
+  /// 重试延迟。
+  /// Delay between retries.
   final Duration retryDelay;
 
-  /// 是否验证证书
+  /// 是否验证证书。
+  /// Whether SSL certificates are validated.
   final bool validateCertificate;
 
-  /// 最大并发连接数
+  /// 最大并发连接数。
+  /// Maximum concurrent connections per host.
   final int maxConnectionsPerHost;
 
-  /// 默认请求头
+  /// 默认请求头。
+  /// Default request headers.
   final Map<String, String> defaultHeaders;
 
-  /// 自定义请求头
+  /// 自定义请求头。
+  /// Custom request headers.
   final Map<String, String> customHeaders;
 
-  /// 是否启用缓存
+  /// 是否启用缓存。
+  /// Whether caching is enabled.
   final bool enableCache;
 
-  /// 最大缓存大小（字节）
+  /// 最大缓存大小（字节）。
+  /// Maximum cache size in bytes.
   final int maxCacheSize;
 
-  /// 是否启用主动 Token 刷新（无感刷新）
+  /// 是否启用主动 token 刷新（无感刷新）。
+  /// Whether proactive token refresh is enabled.
   final bool enableProactiveTokenRefresh;
 
-  /// Token 刷新提前时间阈值（默认 5 分钟）
+  /// Token 刷新提前时间阈值，默认 5 分钟。
+  /// Lead time before token refresh, defaulting to 5 minutes.
   final Duration tokenRefreshThreshold;
 
-  /// Token 刷新拦截器白名单
+  /// Token 刷新拦截器白名单。
+  /// Whitelist for token refresh interception.
   final List<String> tokenRefreshWhiteList;
 
-  /// 配置是否有效
+  /// 配置是否有效。
+  /// Returns whether the configuration is valid.
   bool get isValid {
     return baseUrl.isNotEmpty &&
         connectTimeout.inMilliseconds > 0 &&
@@ -209,28 +236,34 @@ class KoiNetworkConfig {
         maxConnectionsPerHost > 0;
   }
 
-  /// 获取所有请求头
+  /// 获取所有请求头。
+  /// Returns merged default and custom headers.
   Map<String, String> get allHeaders {
     return {...defaultHeaders, ...customHeaders};
   }
 
-  /// 获取环境信息
+  /// 获取环境信息。
+  /// Returns the current runtime environment label.
   String get environment {
     const isProd = bool.fromEnvironment('dart.vm.product');
     if (isProd) return 'production';
     return 'development';
   }
 
-  /// 是否为生产环境
+  /// 是否为生产环境。
+  /// Whether the current environment is production.
   bool get isProduction => environment == 'production';
 
-  /// 是否为开发环境
+  /// 是否为开发环境。
+  /// Whether the current environment is development.
   bool get isDevelopment => environment == 'development';
 
-  /// 是否为测试环境
+  /// 是否为测试环境。
+  /// Whether the current environment is testing.
   bool get isTesting => environment == 'testing';
 
-  /// 配置摘要信息
+  /// 配置摘要信息。
+  /// Summary information for this configuration.
   Map<String, dynamic> get summary => {
     'environment': environment,
     'baseUrl': baseUrl,
@@ -248,7 +281,8 @@ class KoiNetworkConfig {
     'defaultHeadersCount': allHeaders.length,
   };
 
-  /// 获取配置警告
+  /// 获取配置警告。
+  /// Returns potential configuration warnings.
   List<String> get warnings {
     final warnings = <String>[];
 
@@ -277,7 +311,8 @@ class KoiNetworkConfig {
     return warnings;
   }
 
-  /// 打印配置摘要
+  /// 打印配置摘要。
+  /// Logs a summary of the current configuration.
   void printSummary() {
     final log = KoiNetworkAdapters.logger;
     log.info('📋 Koi Network Config:');
@@ -291,7 +326,8 @@ class KoiNetworkConfig {
     log.info('   Enable Cache: $enableCache');
   }
 
-  /// 复制配置并修改部分参数
+  /// 复制配置并覆盖部分参数。
+  /// Returns a copy of the configuration with selected fields replaced.
   KoiNetworkConfig copyWith({
     String? baseUrl,
     Duration? connectTimeout,

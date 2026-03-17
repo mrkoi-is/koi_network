@@ -1,4 +1,4 @@
-# YX Network 文档索引
+# Koi Network 文档索引
 
 ## 📚 文档导航
 
@@ -98,5 +98,5 @@
 
 ## 🎉 开始使用
 
-现在就开始阅读 [QUICK_START.md](QUICK_START.md)，5 分钟快速上手 YX Network！
+现在就开始阅读 [QUICK_START.md](QUICK_START.md)，5 分钟快速上手 Koi Network。
 

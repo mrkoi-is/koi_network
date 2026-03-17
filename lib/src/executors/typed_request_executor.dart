@@ -5,14 +5,14 @@ import 'package:koi_network/src/koi_network_constants.dart'
 import 'package:koi_network/src/models/request_execution_options.dart';
 import 'package:koi_network/src/models/typed_response.dart';
 
-/// 强类型批量请求选项
-/// Typed Batch Request Options
+/// 强类型批量请求选项。
+/// Options for typed batch request execution.
 ///
-/// 配置强类型批量请求的执行行为
-/// Configures the execution behavior of typed batch requests
+/// 配置强类型批量请求的执行行为。
+/// Controls how typed batch requests are executed.
 class TypedBatchRequestOptions {
-  /// 创建强类型批量请求选项
-  /// Create typed batch request options
+  /// 创建强类型批量请求选项。
+  /// Creates typed batch request options.
   ///
   /// - [concurrent] 是否并发执行所有请求 / Whether to execute all requests concurrently
   /// - [showLoading] 是否显示加载提示 / Whether to show loading prompt
@@ -25,38 +25,40 @@ class TypedBatchRequestOptions {
     this.stopOnFirstError = false,
   });
 
-  /// 是否并发执行
-  /// Whether to execute concurrently
+  /// 是否并发执行。
+  /// Whether requests should run concurrently.
   final bool concurrent;
 
-  /// 是否显示加载提示
-  /// Whether to show loading prompt
+  /// 是否显示加载提示。
+  /// Whether to show a loading prompt.
   final bool showLoading;
 
-  /// 加载提示文本
-  /// Loading prompt text
+  /// 加载提示文本。
+  /// Text shown in the loading prompt.
   final String? loadingText;
 
-  /// 是否在第一个失败时停止
-  /// Whether to stop on the first error
+  /// 是否在第一个失败时停止。
+  /// Whether to stop on the first failure.
   final bool stopOnFirstError;
 }
 
-/// Koi 强类型请求执行器
-/// Koi Typed Request Executor
+/// Koi 强类型请求执行器。
+/// Executor for strongly typed requests in Koi Network.
 ///
-/// 用于执行已由 Retrofit / OpenAPI 等工具预解析过的强类型请求。
-/// Used to execute typed requests that have already been pre-parsed by tools like Retrofit / OpenAPI.
+/// 用于执行已由 Retrofit、OpenAPI 等工具预解析的强类型请求。
+/// Executes typed requests that have already been pre-parsed by tools such as Retrofit or OpenAPI.
 ///
-/// 请求函数返回的是实现了 [KoiTypedResponse] 的对象（如 `BaseResult<T>`），
-/// The request function returns an object that implements [KoiTypedResponse] (e.g., `BaseResult<T>`),
-/// 而非原始的 Dio Response。
-/// rather than the raw Dio Response.
+/// 请求函数返回实现了 [KoiTypedResponse] 的对象（如 `BaseResult<T>`），
+/// The request function returns an object implementing [KoiTypedResponse]
+/// (for example `BaseResult<T>`),
+/// 而不是原始的 Dio `Response`。
+/// rather than a raw Dio `Response`.
 ///
 /// 本执行器复用了 [KoiNetworkAdapters] 的 Loading、Error、Logger 调度体系，
-/// This executor reuses the Loading, Error, and Logger scheduling system of [KoiNetworkAdapters],
-/// 使得无论使用动态解析还是强类型预编译，都能获得一致的用户体验。
-/// ensuring a consistent user experience whether using dynamic parsing or strongly-typed pre-compilation.
+/// This executor reuses the Loading, Error, and Logger coordination system from
+/// [KoiNetworkAdapters],
+/// 让动态解析与强类型预编译场景保持一致的用户体验。
+/// so both dynamic parsing and strongly typed flows share a consistent experience.
 ///
 /// ## 使用方式 / Usage
 ///
@@ -74,8 +76,8 @@ class TypedBatchRequestOptions {
 /// );
 /// ```
 class KoiTypedRequestExecutor {
-  /// 执行单个强类型请求
-  /// Execute a single typed request
+  /// 执行单个强类型请求。
+  /// Executes a single typed request.
   ///
   /// [request] 返回 [KoiTypedResponse] 的异步函数 / Async function returning a [KoiTypedResponse]
   /// [options] 请求执行选项 / Request execution options
@@ -179,8 +181,8 @@ class KoiTypedRequestExecutor {
     }
   }
 
-  /// 执行静默强类型请求（不显示加载和错误提示）
-  /// Execute a silent typed request (does not show loading or error prompts)
+  /// 执行静默强类型请求，不显示加载和错误提示。
+  /// Executes a silent typed request without loading or error feedback.
   static Future<T?> executeSilent<T>({
     required Future<KoiTypedResponse<T>> Function() request,
     void Function(T? data)? onSuccess,
@@ -203,8 +205,8 @@ class KoiTypedRequestExecutor {
     );
   }
 
-  /// 执行快速强类型请求（不显示加载，但显示错误）
-  /// Execute a quick typed request (does not show loading, but shows errors)
+  /// 执行快速强类型请求，不显示加载但会显示错误。
+  /// Executes a quick typed request that hides loading but still shows errors.
   static Future<T?> executeQuick<T>({
     required Future<KoiTypedResponse<T>> Function() request,
     void Function(T? data)? onSuccess,
@@ -228,8 +230,8 @@ class KoiTypedRequestExecutor {
     );
   }
 
-  /// 执行强类型批量请求
-  /// Execute typed batch requests
+  /// 执行强类型批量请求。
+  /// Executes a batch of typed requests.
   static Future<List<T?>> executeBatch<T>(
     List<Future<KoiTypedResponse<T>> Function()> requests, {
     TypedBatchRequestOptions? options,
@@ -299,8 +301,8 @@ class KoiTypedRequestExecutor {
     }
   }
 
-  /// 执行单个批量请求中的强类型请求
-  /// Execute a single typed request within a batch
+  /// 执行批量中的单个强类型请求。
+  /// Executes a single typed request inside a batch.
   static Future<T?> _executeSingleInBatch<T>(
     Future<KoiTypedResponse<T>> Function() request, {
     bool stopOnError = false,
@@ -336,14 +338,14 @@ class KoiTypedRequestExecutor {
     }
   }
 
-  /// 执行强类型重试请求
-  /// Execute a typed request with automatic retries
+  /// 执行带重试的强类型请求。
+  /// Executes a typed request with retry support.
   ///
   /// ⚠️ 注意：Dio 已通过 dio_smart_retry 拦截器自动处理网络层重试。
   /// ⚠️ Note: Dio already handles network-layer retries automatically via the dio_smart_retry interceptor.
   ///
-  /// 此方法主要用于应用层的业务逻辑重试（如业务错误码重试）。
-  /// This method is primarily used for application-layer business logic retries (e.g., retrying on business error codes).
+  /// 此方法主要用于应用层业务逻辑重试，例如业务错误码重试。
+  /// This method is mainly intended for application-layer retries, such as retrying on business error codes.
   static Future<T?> executeWithRetry<T>({
     required Future<KoiTypedResponse<T>> Function() request,
     int maxRetries = 3,

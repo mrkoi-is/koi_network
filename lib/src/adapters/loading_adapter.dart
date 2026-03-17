@@ -1,32 +1,32 @@
-/// Koi 加载提示适配器接口
-/// Koi Loading Prompt Adapter Interface
+/// Koi 加载提示适配器接口。
+/// Interface for loading feedback in Koi Network.
 ///
-/// 用于解耦网络库和项目特定的加载提示逻辑
-/// Used to decouple the network library from project-specific loading prompt logic
+/// 用于解耦网络库和项目特定的加载提示逻辑。
+/// Decouples the networking layer from project-specific loading UI logic.
 abstract class KoiLoadingAdapter {
-  /// 显示加载提示
-  /// Show loading prompt
+  /// 显示加载提示。
+  /// Shows a loading prompt.
   void showLoading({String? message});
 
-  /// 隐藏加载提示
-  /// Hide loading prompt
+  /// 隐藏加载提示。
+  /// Hides the loading prompt.
   void hideLoading();
 
-  /// 显示进度加载（可选，用于文件上传/下载）
-  /// Show progress loading (optional, used for file upload/download)
+  /// 显示进度加载，可选，通常用于上传或下载。
+  /// Shows progress feedback, typically for uploads or downloads.
   void showProgress({required double progress, String? message}) {}
 
-  /// 隐藏进度加载
-  /// Hide progress loading
+  /// 隐藏进度加载。
+  /// Hides progress feedback.
   void hideProgress() {}
 
-  /// 检查是否正在显示加载提示
-  /// Check if the loading prompt is currently being displayed
+  /// 检查是否正在显示加载提示。
+  /// Returns whether a loading prompt is currently shown.
   bool isLoading() => false;
 }
 
-/// 默认的加载适配器（静默模式）
-/// Default loading adapter (silent mode)
+/// 默认加载适配器，采用静默模式。
+/// Default loading adapter that operates in silent mode.
 class KoiDefaultLoadingAdapter implements KoiLoadingAdapter {
   bool _isLoading = false;
 

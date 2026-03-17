@@ -1,10 +1,11 @@
-/// Koi Network - 企业级网络请求库
-/// Koi Network - Enterprise-grade Networking Library
+/// Koi Network 企业级网络请求库。
+/// Koi Network is an enterprise-grade networking library.
 ///
-/// 基于 Dio 最佳实践设计，支持可配置的响应解析、请求编码、
-/// Token 刷新、重试、缓存和适配器架构。
-/// Designed based on Dio best practices, supporting configurable response parsing,
-/// request encoding, token refreshing, retries, caching, and an adapter architecture.
+/// 基于 Dio 最佳实践设计，支持可配置的响应解析、请求编码、token 刷新、
+/// 重试、缓存，以及适配器化架构。
+/// Built on Dio best practices, it supports configurable response parsing,
+/// request encoding, token refresh, retries, caching, and an adapter-based
+/// architecture.
 ///
 /// ## 快速开始
 /// ## Quick Start
@@ -17,7 +18,7 @@
 ///   loadingAdapter: MyLoadingAdapter(),
 ///   platformAdapter: MyPlatformAdapter(),
 ///   responseParser: MyResponseParser(), // 可选 / Optional
-///   requestEncoder: KoiJsonRequestEncoder(), // 可选 / Optional
+///   requestEncoder: const KoiJsonRequestEncoder(), // 可选 / Optional
 /// );
 ///
 /// // 2. 初始化 / Initialize
@@ -26,8 +27,8 @@
 ///   environment: 'production',
 /// );
 ///
-/// // 3. 使用 / Usage
-/// final result = await KoiRequestExecutor.instance.execute(
+/// // 3. 发起请求 / Make a request
+/// final result = await KoiRequestExecutor.execute<Map<String, dynamic>>(
 ///   request: () => dio.get('/users'),
 /// );
 /// ```

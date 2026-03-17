@@ -13,7 +13,7 @@
 ### Migration Guide
 Projects using Retrofit-generated `BaseResult<T>` can integrate by:
 1. Implementing `KoiTypedResponse<T>` on the existing `BaseResult<T>` class
-2. Replacing `YxRequestExecutor.execute(request: ...)` with `KoiTypedRequestExecutor.execute(request: ...)`
+2. Replacing `KoiRequestExecutor.execute(request: ...)` with `KoiTypedRequestExecutor.execute(request: ...)`
 
 ## [0.1.0] - 2026-03-01
 

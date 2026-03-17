@@ -1,10 +1,10 @@
-# YX Network 测试指南
+# Koi Network 测试指南
 
 ## 📊 测试覆盖情况
 
 ### ✅ 已完成的测试
 
-YX Network 包含完整的单元测试，覆盖核心功能：
+Koi Network 包含完整的单元测试，覆盖核心功能：
 
 #### 1. JWT 解析器测试 (`test/utils/jwt_decoder_test.dart`)
 - ✅ **23 个测试用例**
@@ -46,7 +46,7 @@ YX Network 包含完整的单元测试，覆盖核心功能：
 ### 安装依赖
 
 ```bash
-cd new_architecture/learning_officer_oa/packages/yx_network
+cd /path/to/koi_network
 flutter pub get
 ```
 
@@ -168,7 +168,7 @@ dev_dependencies:
 
 ```dart
 // 1. 创建 Mock 类
-class MockAuthAdapter extends Mock implements YxAuthAdapter {}
+class MockAuthAdapter extends Mock implements KoiAuthAdapter {}
 
 // 2. 注册 Fallback 值
 setUpAll(() {

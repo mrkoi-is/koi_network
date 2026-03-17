@@ -4,16 +4,16 @@ import 'package:koi_network/src/adapters/platform_adapter.dart'
     show KoiPlatformAdapter;
 import 'package:koi_network/src/koi_network_constants.dart';
 
-/// Koi 认证拦截器
-/// Koi Authentication Interceptor
+/// Koi 认证拦截器。
+/// Interceptor that injects authentication-related headers.
 ///
 /// 自动添加认证信息和通用请求头。
-/// Automatically adds authentication information and common request headers.
+/// Automatically adds authentication information and shared request headers.
 ///
 /// 平台信息和应用版本通过 [KoiPlatformAdapter] 获取，
-/// Platform information and app version are obtained via [KoiPlatformAdapter],
-/// 不依赖 Flutter 或 package_info_plus。
-/// so it does not depend on Flutter or package_info_plus.
+/// Platform information and app version are provided by [KoiPlatformAdapter],
+/// 因此不依赖 Flutter 或 `package_info_plus`。
+/// so it does not depend on Flutter or `package_info_plus`.
 class KoiAuthInterceptor extends QueuedInterceptor {
   static int _requestCounter = 0;
 
@@ -50,8 +50,8 @@ class KoiAuthInterceptor extends QueuedInterceptor {
     }
   }
 
-  /// 添加通用请求头
-  /// Add common request headers
+  /// 添加通用请求头。
+  /// Adds common request headers.
   void _addCommonHeaders(RequestOptions options) {
     final platform = KoiNetworkAdapters.platform;
     final headers = <String, String>{
@@ -66,8 +66,8 @@ class KoiAuthInterceptor extends QueuedInterceptor {
     options.headers.addAll(headers);
   }
 
-  /// 添加认证头
-  /// Add authentication headers
+  /// 添加认证请求头。
+  /// Adds authentication headers.
   void _addAuthHeaders(RequestOptions options) {
     try {
       final token = KoiNetworkAdapters.auth.getToken();
@@ -84,8 +84,8 @@ class KoiAuthInterceptor extends QueuedInterceptor {
     }
   }
 
-  /// 生成唯一请求 ID（原子计数器 + 微秒时间戳）
-  /// Generate a unique request ID (atomic counter + microseconds timestamp)
+  /// 生成唯一请求 ID，基于原子计数器和微秒时间戳。
+  /// Generates a unique request ID using an atomic counter and microsecond timestamp.
   String _generateRequestId() {
     return 'koi_${DateTime.now().microsecondsSinceEpoch}_${++_requestCounter}';
   }

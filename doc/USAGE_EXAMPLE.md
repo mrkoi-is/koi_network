@@ -1,4 +1,4 @@
-# YX Network 使用示例
+# Koi Network 使用示例
 
 ## 📋 完整使用流程
 
@@ -30,13 +30,13 @@ void main() async {
 
 > **适用场景**：所有 GetX Controller 中的网络请求
 
-使用 `YxNetworkRequestMixin` 可以让代码更简洁、更具语义化。
+使用 `KoiNetworkRequestMixin` 可以让代码更简洁、更具语义化。
 
 ```dart
 import 'package:get/get.dart';
 import 'package:oa_core/oa_core.dart';
 
-class MyController extends GetxController with YxNetworkRequestMixin {
+class MyController extends GetxController with KoiNetworkRequestMixin {
   final RxList<MyData> dataList = <MyData>[].obs;
 
   /// 通用请求：显示 Loading + 显示错误
@@ -105,17 +105,17 @@ class MyController extends GetxController with YxNetworkRequestMixin {
 
 ---
 
-## 🔧 高级用法：直接使用 YxRequestExecutor
+## 🔧 高级用法：直接使用 KoiRequestExecutor
 
 > **适用场景**：非 Controller 类（如 Service、Repository）或需要完全自定义配置
 
 ```dart
-import 'package:yx_network/yx_network.dart';
+import 'package:koi_network/koi_network.dart';
 
 class MyRepository {
   /// 在非 Controller 中直接使用执行器
   Future<List<MyData>?> fetchData() async {
-    return await YxRequestExecutor.execute<List<MyData>>(
+    return await KoiRequestExecutor.execute<List<MyData>>(
       request: () => apiClient.getData(),
       options: RequestExecutionOptions<List<MyData>>(
         showLoading: false,  // Repository 层通常不显示 UI
@@ -127,20 +127,20 @@ class MyRepository {
 
   /// 静默获取
   Future<MyData?> getSilently() async {
-    return await YxRequestExecutor.executeSilent<MyData>(
+    return await KoiRequestExecutor.executeSilent<MyData>(
       request: () => apiClient.getData(),
     );
   }
 }
 ```
 
-### 何时选择 YxRequestExecutor？
+### 何时选择 KoiRequestExecutor？
 
 | 场景 | 推荐方式 |
 |------|---------|
 | Controller 中的请求 | ✅ Mixin |
-| Repository / Service 层 | ✅ YxRequestExecutor |
-| 需要自定义 Options 的复杂场景 | ✅ YxRequestExecutor |
+| Repository / Service 层 | ✅ KoiRequestExecutor |
+| 需要自定义 Options 的复杂场景 | ✅ KoiRequestExecutor |
 | 静态工具方法 | ✅ NetworkRequestUtils |
 
 ---
@@ -148,7 +148,7 @@ class MyRepository {
 ## ⚙️ 自定义配置
 
 ```dart
-final config = YxNetworkConfig.create(
+final config = KoiNetworkConfig.create(
   baseUrl: 'https://api.example.com',
   connectTimeout: Duration(seconds: 30),
   receiveTimeout: Duration(seconds: 60),
@@ -166,7 +166,7 @@ await OaNetworkService.initializeWithConfig(config);
 ## 🎯 最佳实践
 
 1. **Controller 中统一使用 Mixin** - 代码更简洁
-2. **Repository 层使用 YxRequestExecutor** - 不关心 UI 反馈
+2. **Repository 层使用 KoiRequestExecutor** - 不关心 UI 反馈
 3. **下拉刷新使用 `quickRequest`** - 不需要 Loading 遮罩
 4. **后台轮询使用 `silentRequest`** - 完全静默
 5. **关键数据使用 `retryRequest`** - 提高成功率

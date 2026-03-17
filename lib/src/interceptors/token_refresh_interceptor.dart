@@ -4,18 +4,18 @@ import 'package:dio/dio.dart';
 import 'package:koi_network/src/adapters/auth_adapter.dart';
 import 'package:koi_network/src/adapters/network_adapters.dart';
 
-/// Koi Token 刷新拦截器
-/// Koi Token Refresh Interceptor
+/// Koi Token 刷新拦截器。
+/// Interceptor responsible for token refresh in Koi Network.
 ///
-/// 双重保护机制：
-/// Dual protection mechanism:
+/// 采用双重保护机制：
+/// Uses a dual-protection strategy:
 /// 1. 主动刷新（优先）：在 onRequest 中检查 Token 是否即将过期，提前刷新（无感知）
 /// 1. Proactive refresh (priority): Checks if the Token is about to expire in `onRequest` and refreshes it in advance (seamlessly).
 /// 2. 被动刷新（兜底）：在 onError 中处理 401/402 错误，触发刷新
 /// 2. Passive refresh (fallback): Handles 401/402 errors in `onError` and triggers a refresh.
 class KoiTokenRefreshInterceptor extends Interceptor {
-  /// 创建 Token 刷新拦截器
-  /// Create Token refresh interceptor
+  /// 创建 Token 刷新拦截器。
+  /// Creates a token refresh interceptor.
   ///
   /// - [_dio] 主 Dio 实例，用于重试请求 / Main Dio instance, used to retry requests
   /// - [enableProactiveRefresh] 是否启用主动刷新（默认开启） / Whether to enable proactive refresh (default is true)
@@ -28,20 +28,20 @@ class KoiTokenRefreshInterceptor extends Interceptor {
     this.whiteList = const [],
   });
 
-  /// 主 Dio 实例（用于共享拦截器链重试）
-  /// Main Dio instance (used for shared interceptor chain retries)
+  /// 主 Dio 实例，用于共享拦截器链重试。
+  /// Main Dio instance used when retrying through the shared interceptor chain.
   final Dio _dio;
 
-  /// 是否启用主动刷新（无感知刷新）
-  /// Whether to enable proactive refresh (seamless refresh)
+  /// 是否启用主动刷新（无感知刷新）。
+  /// Whether proactive refresh is enabled.
   final bool enableProactiveRefresh;
 
-  /// Token 刷新提前时间阈值
-  /// Token refresh advance time threshold
+  /// Token 刷新提前时间阈值。
+  /// Lead time used before triggering refresh.
   final Duration refreshThreshold;
 
-  /// 不需要 Token 刷新的白名单路径
-  /// Whitelist paths that do not require Token refresh
+  /// 不需要 Token 刷新的白名单路径。
+  /// Whitelisted paths that skip token refresh checks.
   final List<String> whiteList;
 
   static bool _isRefreshing = false;
@@ -194,8 +194,8 @@ class KoiTokenRefreshInterceptor extends Interceptor {
     }
   }
 
-  /// 执行刷新逻辑（保证同一时间只有一个刷新在运行）
-  /// Execute refresh logic (ensuring only one refresh is running at a time)
+  /// 执行刷新逻辑，保证同一时间只有一个刷新任务在运行。
+  /// Performs the refresh flow while ensuring only one refresh runs at a time.
   Future<bool> _performRefresh() async {
     // 双重检查：防止并发进入时重复刷新
     // Double check: prevent duplicate refresh on concurrent entry
@@ -253,8 +253,9 @@ class KoiTokenRefreshInterceptor extends Interceptor {
         });
   }
 
-  /// 检查是否为认证错误（通过 responseParser 配置）
-  /// Check if it is an authentication error (via responseParser configuration)
+  /// 检查是否为认证错误，通过 `responseParser` 统一判断。
+  /// Returns whether the error is an authentication error using the configured
+  /// `responseParser`.
   bool _isAuthError(DioException err) {
     final body = err.response?.data;
     final mapBody = body is Map<String, dynamic> ? body : null;
@@ -291,8 +292,8 @@ class KoiTokenRefreshInterceptor extends Interceptor {
     );
   }
 
-  /// 处理认证失败
-  /// Handle authentication failure
+  /// 处理认证失败。
+  /// Handles authentication failure.
   Future<void> _handleAuthFailure() async {
     try {
       await KoiNetworkAdapters.errorHandler.handleAuthError(

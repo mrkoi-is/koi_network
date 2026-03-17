@@ -6,14 +6,14 @@ import 'package:koi_network/src/adapters/platform_adapter.dart';
 import 'package:koi_network/src/adapters/request_encoder.dart';
 import 'package:koi_network/src/adapters/response_parser.dart';
 
-/// Koi 网络适配器注册中心
-/// Koi Network Adapters Registry
+/// Koi 网络适配器注册中心。
+/// Central registry for Koi Network adapters.
 ///
 /// 用于注册和管理所有适配器实例。
-/// Used to register and manage all adapter instances.
+/// Registers and manages all adapter instances used by the library.
 ///
 /// 项目端在初始化网络库前必须调用 [register] 注册适配器。
-/// The project side must call [register] to register adapters before initializing the network library.
+/// Host applications must call [register] before initializing the network layer.
 class KoiNetworkAdapters {
   static KoiAuthAdapter? _authAdapter;
   static KoiErrorHandlerAdapter? _errorHandlerAdapter;
@@ -23,8 +23,8 @@ class KoiNetworkAdapters {
   static KoiResponseParser? _responseParser;
   static KoiRequestEncoder? _requestEncoder;
 
-  /// 注册所有适配器
-  /// Register all adapters
+  /// 注册所有适配器。
+  /// Registers all adapter implementations.
   ///
   /// [authAdapter] 认证适配器（必填）/ Authentication adapter (required)
   /// [errorHandlerAdapter] 错误处理适配器（必填）/ Error handler adapter (required)
@@ -51,8 +51,8 @@ class KoiNetworkAdapters {
     _requestEncoder = requestEncoder ?? const KoiJsonRequestEncoder();
   }
 
-  /// 注册默认适配器（用于测试）
-  /// Register default adapters (used for testing)
+  /// 注册默认适配器，主要用于测试。
+  /// Registers default adapters, mainly for testing.
   static void registerDefaults() {
     _authAdapter = KoiDefaultAuthAdapter();
     _errorHandlerAdapter = KoiDefaultErrorHandlerAdapter();
@@ -63,8 +63,8 @@ class KoiNetworkAdapters {
     _requestEncoder = const KoiJsonRequestEncoder();
   }
 
-  /// 获取认证适配器
-  /// Get authentication adapter
+  /// 获取认证适配器。
+  /// Returns the authentication adapter.
   static KoiAuthAdapter get auth {
     if (_authAdapter == null) {
       throw StateError(
@@ -74,8 +74,8 @@ class KoiNetworkAdapters {
     return _authAdapter!;
   }
 
-  /// 获取错误处理适配器
-  /// Get error handler adapter
+  /// 获取错误处理适配器。
+  /// Returns the error handler adapter.
   static KoiErrorHandlerAdapter get errorHandler {
     if (_errorHandlerAdapter == null) {
       throw StateError(
@@ -85,8 +85,8 @@ class KoiNetworkAdapters {
     return _errorHandlerAdapter!;
   }
 
-  /// 获取加载提示适配器
-  /// Get loading prompt adapter
+  /// 获取加载提示适配器。
+  /// Returns the loading adapter.
   static KoiLoadingAdapter get loading {
     if (_loadingAdapter == null) {
       throw StateError(
@@ -96,8 +96,8 @@ class KoiNetworkAdapters {
     return _loadingAdapter!;
   }
 
-  /// 获取平台工具适配器
-  /// Get platform adapter
+  /// 获取平台工具适配器。
+  /// Returns the platform adapter.
   static KoiPlatformAdapter get platform {
     if (_platformAdapter == null) {
       throw StateError(
@@ -107,29 +107,29 @@ class KoiNetworkAdapters {
     return _platformAdapter!;
   }
 
-  /// 获取日志适配器
-  /// Get logger adapter
+  /// 获取日志适配器。
+  /// Returns the logger adapter.
   static KoiLoggerAdapter get logger {
     _loggerAdapter ??= KoiDefaultLoggerAdapter();
     return _loggerAdapter!;
   }
 
-  /// 获取响应解析器
-  /// Get response parser
+  /// 获取响应解析器。
+  /// Returns the response parser.
   static KoiResponseParser get responseParser {
     _responseParser ??= const KoiDefaultResponseParser();
     return _responseParser!;
   }
 
-  /// 获取请求编码器
-  /// Get request encoder
+  /// 获取请求编码器。
+  /// Returns the request encoder.
   static KoiRequestEncoder get requestEncoder {
     _requestEncoder ??= const KoiJsonRequestEncoder();
     return _requestEncoder!;
   }
 
-  /// 检查是否已注册所有必需的适配器
-  /// Check if all required adapters are registered
+  /// 检查是否已注册所有必需适配器。
+  /// Returns whether all required adapters are registered.
   static bool get isRegistered {
     return _authAdapter != null &&
         _errorHandlerAdapter != null &&
@@ -137,8 +137,8 @@ class KoiNetworkAdapters {
         _platformAdapter != null;
   }
 
-  /// 清除所有适配器（用于测试）
-  /// Clear all adapters (used for testing)
+  /// 清除所有适配器，主要用于测试。
+  /// Clears all registered adapters, mainly for testing.
   static void clear() {
     _authAdapter = null;
     _errorHandlerAdapter = null;
@@ -149,8 +149,8 @@ class KoiNetworkAdapters {
     _requestEncoder = null;
   }
 
-  /// 获取适配器状态信息
-  /// Get adapter status information
+  /// 获取适配器状态信息。
+  /// Returns status information for all adapters.
   static Map<String, bool> getStatus() {
     return {
       'authAdapter': _authAdapter != null,

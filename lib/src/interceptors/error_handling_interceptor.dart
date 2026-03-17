@@ -5,21 +5,23 @@ import 'package:koi_network/src/adapters/response_parser.dart'
 import 'package:koi_network/src/config/network_config.dart';
 import 'package:koi_network/src/koi_network_constants.dart';
 
-/// Koi 错误处理拦截器
-/// Koi Error Handling Interceptor
+/// Koi 错误处理拦截器。
+/// Interceptor for centralized error handling.
 ///
-/// 统一处理网络请求错误。使用 [KoiResponseParser] 提取错误消息
-/// Unified handling of network request errors. Uses [KoiResponseParser] to extract error messages
+/// 统一处理网络请求错误，并通过 [KoiResponseParser] 提取错误消息。
+/// Handles network request errors centrally and extracts messages through
+/// [KoiResponseParser].
 ///
-/// 和判断认证错误，而非硬编码状态码和字段名。
-/// and determine authentication errors, instead of hardcoding status codes and field names.
+/// 同时通过解析器判断认证错误，而不是硬编码状态码和字段名。
+/// It also detects authentication errors through the parser instead of
+/// hardcoding status codes or response fields.
 class KoiErrorHandlingInterceptor extends Interceptor {
-  /// 创建错误处理拦截器
-  /// Create error handling interceptor
+  /// 创建错误处理拦截器。
+  /// Creates an error handling interceptor.
   KoiErrorHandlingInterceptor(this.config);
 
-  /// 网络配置
-  /// Network configuration
+  /// 网络配置。
+  /// Network configuration used by the interceptor.
   final KoiNetworkConfig config;
 
   @override
@@ -45,8 +47,8 @@ class KoiErrorHandlingInterceptor extends Interceptor {
     handler.next(err);
   }
 
-  /// 记录错误详情
-  /// Log error details
+  /// 记录错误详情。
+  /// Logs detailed error information.
   void _logErrorDetails(DioException err) {
     final buffer = StringBuffer()
       ..writeln('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
@@ -68,8 +70,8 @@ class KoiErrorHandlingInterceptor extends Interceptor {
     KoiNetworkAdapters.logger.error(buffer.toString());
   }
 
-  /// 尝试处理认证错误
-  /// Try to handle authentication error
+  /// 尝试处理认证错误。
+  /// Attempts to handle authentication-related errors.
   Future<void> _tryHandleAuthError(DioException err) async {
     try {
       final parser = KoiNetworkAdapters.responseParser;
@@ -96,8 +98,8 @@ class KoiErrorHandlingInterceptor extends Interceptor {
     }
   }
 
-  /// 提取错误消息
-  /// Extract error message
+  /// 提取错误消息。
+  /// Extracts a user-facing error message.
   String _extractErrorMessage(DioException err) {
     // 使用 parser 从响应体提取消息
     // Extract message from response body using parser
@@ -118,8 +120,8 @@ class KoiErrorHandlingInterceptor extends Interceptor {
     return _getDefaultErrorMessage(err.type);
   }
 
-  /// 获取默认错误消息
-  /// Get default error message
+  /// 获取默认错误消息。
+  /// Returns a default error message for the given Dio error type.
   String _getDefaultErrorMessage(DioExceptionType type) {
     return switch (type) {
       DioExceptionType.connectionTimeout => 'Connection timeout',

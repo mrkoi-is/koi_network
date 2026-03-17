@@ -1,4 +1,4 @@
-# YX Network 技术选型说明
+# Koi Network 技术选型说明
 
 ## 📦 核心依赖
 
@@ -160,7 +160,7 @@ dio.interceptors.add(
 
 ## ✨ 总结
 
-YX Network 的技术选型遵循以下原则：
+Koi Network 的技术选型遵循以下原则：
 
 1. **专业性** - 使用业界最佳实践
 2. **可靠性** - 选择经过验证的成熟库

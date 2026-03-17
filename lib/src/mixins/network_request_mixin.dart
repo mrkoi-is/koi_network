@@ -4,21 +4,21 @@ import 'package:koi_network/src/executors/typed_request_executor.dart';
 import 'package:koi_network/src/models/request_execution_options.dart';
 import 'package:koi_network/src/models/typed_response.dart';
 
-/// Koi 网络请求 Mixin
-/// Koi Network Request Mixin
+/// Koi 网络请求 mixin。
+/// Mixin that provides convenient request helpers for controllers.
 ///
 /// 为 Controller 提供便捷的网络请求方法。
-/// Provides convenient network request methods for Controllers.
+/// Adds convenient request helpers to controller classes.
 ///
 /// 支持两种模式：
-/// Supports two modes:
+/// Supports two execution modes:
 /// - **动态解析模式 (Dynamic Parsing Mode)**：通过 [KoiRequestExecutor] 执行原始 Dio 请求 / Executes original Dio requests via [KoiRequestExecutor]
 /// - **强类型模式 (Typed Mode)**：通过 [KoiTypedRequestExecutor] 执行预解析的 Retrofit 请求 / Executes pre-parsed Retrofit requests via [KoiTypedRequestExecutor]
 mixin KoiNetworkRequestMixin {
   // ==================== 动态解析模式 / Dynamic Parsing Mode ====================
 
-  /// 通用请求
-  /// Universal Request
+  /// 通用请求。
+  /// Executes a general request.
   Future<T?> universalRequest<T>({
     required Future<Response<dynamic>> Function() request,
     T Function(dynamic json)? fromJson,
@@ -51,8 +51,8 @@ mixin KoiNetworkRequestMixin {
     );
   }
 
-  /// 静默请求（不显示加载和错误）
-  /// Silent Request (no loading or error prompts)
+  /// 静默请求，不显示加载和错误。
+  /// Executes a silent request without loading or error feedback.
   Future<T?> silentRequest<T>({
     required Future<Response<dynamic>> Function() request,
     T Function(dynamic json)? fromJson,
@@ -75,8 +75,8 @@ mixin KoiNetworkRequestMixin {
     );
   }
 
-  /// 快速请求（不显示加载，但显示错误）
-  /// Quick Request (no loading prompt, but shows errors)
+  /// 快速请求，不显示加载但会显示错误。
+  /// Executes a quick request that hides loading but still shows errors.
   Future<T?> quickRequest<T>({
     required Future<Response<dynamic>> Function() request,
     T Function(dynamic json)? fromJson,
@@ -99,8 +99,8 @@ mixin KoiNetworkRequestMixin {
     );
   }
 
-  /// 批量请求
-  /// Batch Request
+  /// 批量请求。
+  /// Executes a batch of requests.
   Future<List<T?>> batchRequest<T>(
     List<Future<Response<dynamic>> Function()> requests, {
     T Function(dynamic json)? fromJson,
@@ -121,8 +121,8 @@ mixin KoiNetworkRequestMixin {
     );
   }
 
-  /// 重试请求
-  /// Retry Request
+  /// 重试请求。
+  /// Executes a request with retry support.
   Future<T?> retryRequest<T>({
     required Future<Response<dynamic>> Function() request,
     T Function(dynamic json)? fromJson,
@@ -151,14 +151,14 @@ mixin KoiNetworkRequestMixin {
 
   // ==================== 强类型模式（Retrofit 桥接） / Typed Mode (Retrofit Bridge) ====================
 
-  /// 强类型通用请求
-  /// Typed Universal Request
+  /// 强类型通用请求。
+  /// Executes a general typed request.
   ///
   /// 用于执行已由 Retrofit 预解析的强类型请求。
-  /// Used to execute typed requests that have already been pre-parsed by Retrofit.
+  /// Used for typed requests that have already been pre-parsed by Retrofit.
   ///
   /// [request] 返回实现了 [KoiTypedResponse] 的对象（如 `BaseResult<T>`）。
-  /// [request] returns an object that implements [KoiTypedResponse] (e.g., `BaseResult<T>`).
+  /// [request] returns an object implementing [KoiTypedResponse], such as `BaseResult<T>`.
   Future<T?> typedRequest<T>({
     required Future<KoiTypedResponse<T>> Function() request,
     void Function(T? data)? onSuccess,
@@ -189,8 +189,8 @@ mixin KoiNetworkRequestMixin {
     );
   }
 
-  /// 强类型静默请求
-  /// Typed Silent Request
+  /// 强类型静默请求。
+  /// Executes a silent typed request.
   Future<T?> typedSilentRequest<T>({
     required Future<KoiTypedResponse<T>> Function() request,
     void Function(T? data)? onSuccess,
@@ -207,8 +207,8 @@ mixin KoiNetworkRequestMixin {
     );
   }
 
-  /// 强类型快速请求
-  /// Typed Quick Request
+  /// 强类型快速请求。
+  /// Executes a quick typed request.
   Future<T?> typedQuickRequest<T>({
     required Future<KoiTypedResponse<T>> Function() request,
     void Function(T? data)? onSuccess,
@@ -230,14 +230,14 @@ mixin KoiNetworkRequestMixin {
   }
 }
 
-/// 网络请求工具类
-/// Network Request Utils Class
+/// 网络请求工具类。
+/// Utility class for request helpers without using the mixin.
 ///
-/// 提供静态方法访问（适用于不使用 mixin 的场景）
-/// Provides static method access (suitable for scenarios where mixin is not used)
+/// 提供静态方法访问，适用于不使用 mixin 的场景。
+/// Exposes static helper methods for scenarios where the mixin is not used.
 class NetworkRequestUtils {
-  /// 通用请求
-  /// Universal Request
+  /// 通用请求。
+  /// Executes a general request.
   static Future<T?> universalRequest<T>({
     required Future<Response<dynamic>> Function() request,
     T Function(dynamic json)? fromJson,
@@ -264,8 +264,8 @@ class NetworkRequestUtils {
     );
   }
 
-  /// 静默请求
-  /// Silent Request
+  /// 静默请求。
+  /// Executes a silent request.
   static Future<T?> silentRequest<T>({
     required Future<Response<dynamic>> Function() request,
     T Function(dynamic json)? fromJson,
@@ -282,8 +282,8 @@ class NetworkRequestUtils {
     );
   }
 
-  /// 快速请求
-  /// Quick Request
+  /// 快速请求。
+  /// Executes a quick request.
   static Future<T?> quickRequest<T>({
     required Future<Response<dynamic>> Function() request,
     T Function(dynamic json)? fromJson,
@@ -300,8 +300,8 @@ class NetworkRequestUtils {
     );
   }
 
-  /// 强类型通用请求
-  /// Typed Universal Request
+  /// 强类型通用请求。
+  /// Executes a general typed request.
   static Future<T?> typedRequest<T>({
     required Future<KoiTypedResponse<T>> Function() request,
     void Function(T? data)? onSuccess,
@@ -328,8 +328,8 @@ class NetworkRequestUtils {
     );
   }
 
-  /// 强类型静默请求
-  /// Typed Silent Request
+  /// 强类型静默请求。
+  /// Executes a silent typed request.
   static Future<T?> typedSilentRequest<T>({
     required Future<KoiTypedResponse<T>> Function() request,
     void Function(T? data)? onSuccess,

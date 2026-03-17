@@ -1,8 +1,8 @@
-# YX Network 测试套件
+# Koi Network 测试套件
 
 ## 📋 测试概览
 
-本测试套件为 `yx_network` 包提供全面的测试覆盖，确保所有核心功能正常工作。
+本测试套件为 `koi_network` 包提供全面的测试覆盖，确保所有核心功能正常工作。
 
 ### 测试结构
 
@@ -16,7 +16,7 @@ test/
 │   └── error_handling_interceptor_test.dart # 错误处理拦截器测试
 ├── executors/
 │   ├── request_executor_test.dart         # 基础请求执行器测试
-│   └── enterprise_request_executor_test.dart # 企业级执行器测试（核心）
+│   └── request_executor_test.dart            # 请求执行器测试（核心）
 ├── adapters/
 │   ├── auth_adapter_test.dart             # 认证适配器测试
 │   ├── error_handler_adapter_test.dart    # 错误处理适配器测试
@@ -41,7 +41,7 @@ test/
 ### 运行所有测试
 
 ```bash
-cd new_architecture/learning_officer_oa/packages/yx_network
+cd /path/to/koi_network
 flutter test
 ```
 
@@ -54,8 +54,8 @@ flutter test test/utils/jwt_decoder_test.dart
 # Token 刷新拦截器测试
 flutter test test/interceptors/token_refresh_interceptor_test.dart
 
-# 企业级执行器测试
-flutter test test/executors/enterprise_request_executor_test.dart
+# 请求执行器测试
+flutter test test/executors/request_executor_test.dart
 ```
 
 ### 运行特定测试组
@@ -98,7 +98,7 @@ open coverage/html/index.html
   - 并发控制和请求队列
   - 跳过标记机制
 
-- ✅ **企业级执行器测试** (`test/executors/enterprise_request_executor_test.dart`)
+- ✅ **请求执行器测试** (`test/executors/request_executor_test.dart`)
   - 请求去重（dedupKey 和 requestTag）
   - 请求取消（单个和批量）
   - 加载状态管理
@@ -133,7 +133,7 @@ open coverage/html/index.html
 
 ```dart
 // 1. 创建 Mock 类
-class MockAuthAdapter extends Mock implements YxAuthAdapter {}
+class MockAuthAdapter extends Mock implements KoiAuthAdapter {}
 
 // 2. 注册 Fallback 值（用于 any() 匹配）
 setUpAll(() {

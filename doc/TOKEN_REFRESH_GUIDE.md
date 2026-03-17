@@ -2,7 +2,7 @@
 
 ## 概述
 
-YX Network 实现了类似 [dio_refresh](https://github.com/iamdipanshusingh/dio_refresh) 的 **双重保护机制**，提供无感知的 Token 刷新体验：
+Koi Network 实现了类似 [dio_refresh](https://github.com/iamdipanshusingh/dio_refresh) 的 **双重保护机制**，提供无感知的 Token 刷新体验：
 
 1. **主动刷新（优先）**：在请求发出前检查 Token 是否即将过期，提前刷新（用户完全无感知）
 2. **被动刷新（兜底）**：在收到 401/402 错误时触发刷新，作为兜底方案
@@ -39,9 +39,9 @@ TokenRefreshInterceptor.onError
 ### 1. 创建适配器（使用 JWT Mixin）
 
 ```dart
-import 'package:yx_network/yx_network.dart';
+import 'package:koi_network/koi_network.dart';
 
-class MyAuthAdapter extends YxAuthAdapter with YxJwtTokenMixin {
+class MyAuthAdapter extends KoiAuthAdapter with KoiJwtTokenMixin {
   @override
   String? getToken() {
     return UserStore.to.token.value;
@@ -56,7 +56,7 @@ class MyAuthAdapter extends YxAuthAdapter with YxJwtTokenMixin {
   Future<bool> refresh() async {
     try {
       // 使用 TokenDio 避免循环依赖
-      final dio = YxDioFactory.createTokenDio();
+      final dio = KoiDioFactory.createTokenDio(null);
       final response = await dio.post('/auth/refresh', data: {
         'refresh_token': getRefreshToken(),
       });
@@ -91,13 +91,13 @@ class MyAuthAdapter extends YxAuthAdapter with YxJwtTokenMixin {
 ### 2. 配置网络（启用主动刷新）
 
 ```dart
-final config = YxNetworkConfig.create(
+final config = KoiNetworkConfig.create(
   baseUrl: 'https://api.example.com',
   enableProactiveTokenRefresh: true,  // 启用主动刷新（默认 true）
   tokenRefreshThreshold: const Duration(minutes: 5),  // 提前 5 分钟刷新（默认）
 );
 
-await YxNetworkInitializer.initialize(
+await KoiNetworkInitializer.initialize(
   config: config,
   authAdapter: MyAuthAdapter(),
   // ... 其他适配器
@@ -113,7 +113,7 @@ final result = await api.getUserInfo();
 
 ## JWT Token 解析
 
-`YxJwtTokenMixin` 提供了以下能力：
+`KoiJwtTokenMixin` 提供了以下能力：
 
 ```dart
 // 获取 Token 过期时间（Unix 时间戳）
@@ -134,7 +134,7 @@ Duration? remaining = adapter.getTokenRemainingTime();
 ### 自定义刷新阈值
 
 ```dart
-final config = YxNetworkConfig.create(
+final config = KoiNetworkConfig.create(
   tokenRefreshThreshold: const Duration(minutes: 10),  // 提前 10 分钟刷新
 );
 ```
@@ -142,7 +142,7 @@ final config = YxNetworkConfig.create(
 ### 禁用主动刷新（仅使用被动刷新）
 
 ```dart
-final config = YxNetworkConfig.create(
+final config = KoiNetworkConfig.create(
   enableProactiveTokenRefresh: false,  // 禁用主动刷新
 );
 ```
@@ -152,7 +152,7 @@ final config = YxNetworkConfig.create(
 如果你的项目不使用 JWT Token，可以覆盖相关方法：
 
 ```dart
-class MyAuthAdapter extends YxAuthAdapter {
+class MyAuthAdapter extends KoiAuthAdapter {
   @override
   bool isTokenExpiringSoon({Duration threshold = const Duration(minutes: 5)}) {
     // 自定义过期检查逻辑
@@ -160,7 +160,7 @@ class MyAuthAdapter extends YxAuthAdapter {
     return DateTime.now().add(threshold).isAfter(expiryTime);
   }
 
-  // 不使用 YxJwtTokenMixin
+  // 不使用 KoiJwtTokenMixin
 }
 ```
 
@@ -168,12 +168,12 @@ class MyAuthAdapter extends YxAuthAdapter {
 
 1. **使用 JWT Token**：推荐使用 JWT Token，可以自动解析过期时间
 2. **合理设置阈值**：根据业务场景设置合适的刷新阈值（默认 5 分钟）
-3. **使用 TokenDio**：在 `refresh()` 方法中使用 `YxDioFactory.createTokenDio()` 避免循环依赖
+3. **使用 TokenDio**：在 `refresh()` 方法中使用 `KoiDioFactory.createTokenDio(null)` 避免循环依赖
 4. **错误处理**：在 `refresh()` 中捕获异常并返回 false，让被动刷新兜底
 
 ## 对比 dio_refresh
 
-| 特性 | YX Network | dio_refresh |
+| 特性 | Koi Network | dio_refresh |
 |------|-----------|-------------|
 | 主动刷新 | ✅ | ✅ |
 | 被动刷新 | ✅ | ✅ |

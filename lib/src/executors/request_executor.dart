@@ -4,14 +4,14 @@ import 'package:koi_network/src/koi_network_constants.dart'
     show KoiNetworkConstants;
 import 'package:koi_network/src/models/request_execution_options.dart';
 
-/// 批量请求选项
-/// Batch Request Options
+/// 批量请求选项。
+/// Options for batch request execution.
 ///
-/// 配置批量请求的执行行为，如并发模式、加载提示等
-/// Configures the execution behavior of batch requests, such as concurrent mode, loading prompts, etc.
+/// 配置批量请求的执行行为，例如并发模式、加载提示等。
+/// Controls how batch requests run, such as concurrency mode and loading feedback.
 class BatchRequestOptions {
-  /// 创建批量请求选项
-  /// Create batch request options
+  /// 创建批量请求选项。
+  /// Creates batch request options.
   ///
   /// - [concurrent] 是否并发执行所有请求 / Whether to execute all requests concurrently
   /// - [showLoading] 是否显示加载提示 / Whether to show loading prompt
@@ -24,61 +24,61 @@ class BatchRequestOptions {
     this.stopOnFirstError = false,
   });
 
-  /// 是否并发执行
-  /// Whether to execute concurrently
+  /// 是否并发执行。
+  /// Whether requests should run concurrently.
   final bool concurrent;
 
-  /// 是否显示加载提示
-  /// Whether to show loading prompt
+  /// 是否显示加载提示。
+  /// Whether to show a loading prompt.
   final bool showLoading;
 
-  /// 加载提示文本
-  /// Loading prompt text
+  /// 加载提示文本。
+  /// Text shown in the loading prompt.
   final String? loadingText;
 
-  /// 是否在第一个失败时停止
-  /// Whether to stop on the first error
+  /// 是否在第一个失败时停止。
+  /// Whether to stop on the first failure.
   final bool stopOnFirstError;
 }
 
-/// 请求逻辑异常
-/// Request Logic Exception
+/// 请求逻辑异常。
+/// Exception representing business-logic request failures.
 ///
-/// 用于表示业务逻辑层面的请求失败，区别于网络层异常
-/// Used to indicate request failure at the business logic layer, distinct from network layer exceptions
+/// 用于表示业务逻辑层面的失败，与网络层异常区分开。
+/// Used for business-layer failures, distinct from network-layer exceptions.
 class RequestLogicException<T> implements Exception {
-  /// 创建请求逻辑异常
-  /// Create request logic exception
+  /// 创建请求逻辑异常。
+  /// Creates a request logic exception.
   ///
   /// - [message] 错误消息 / Error message
   /// - [data] 错误时携带的响应数据（可选） / Response data carried upon error (optional)
   /// - [errorCode] 业务错误码（可选） / Business error code (optional)
   RequestLogicException(this.message, {this.data, this.errorCode});
 
-  /// 错误消息
-  /// Error message
+  /// 错误消息。
+  /// Human-readable error message.
   final String message;
 
-  /// 响应数据（错误时可能携带部分数据）
-  /// Response data (may carry partial data upon error)
+  /// 响应数据，错误时可能携带部分内容。
+  /// Response data that may still be available when an error occurs.
   final T? data;
 
-  /// 业务错误码
-  /// Business error code
+  /// 业务错误码。
+  /// Business error code.
   final int? errorCode;
 
   @override
   String toString() => 'RequestLogicException: $message (code: $errorCode)';
 }
 
-/// Koi 请求执行器
-/// Koi Request Executor
+/// Koi 请求执行器。
+/// Core request executor for Koi Network.
 ///
-/// 提供统一的请求执行逻辑，与后端响应格式无关。
-/// Provides unified request execution logic, independent of the backend response format.
+/// 提供统一的请求执行逻辑，与具体后端响应格式解耦。
+/// Provides a unified request execution flow decoupled from backend response formats.
 ///
-/// 通过 [KoiNetworkAdapters.responseParser] 解析响应数据。
-/// Parses response data via [KoiNetworkAdapters.responseParser].
+/// 响应解析通过 [KoiNetworkAdapters.responseParser] 完成。
+/// Response parsing is delegated to [KoiNetworkAdapters.responseParser].
 ///
 /// ## 使用方式 / Usage
 ///
@@ -95,8 +95,8 @@ class RequestLogicException<T> implements Exception {
 /// );
 /// ```
 class KoiRequestExecutor {
-  /// 执行单个请求
-  /// Execute a single request
+  /// 执行单个请求。
+  /// Executes a single request.
   ///
   /// [request] 返回 Dio [Response] 的异步函数 / Async function returning a Dio [Response]
   /// [fromJson] 可选，将响应数据转换为目标类型 T / Optional, converts response data to target type T
@@ -251,8 +251,8 @@ class KoiRequestExecutor {
     }
   }
 
-  /// 执行静默请求（不显示加载和错误提示）
-  /// Execute a silent request (does not show loading or error prompts)
+  /// 执行静默请求，不显示加载和错误提示。
+  /// Executes a silent request without loading or error feedback.
   static Future<T?> executeSilent<T>({
     required Future<Response<dynamic>> Function() request,
     T Function(dynamic json)? fromJson,
@@ -277,8 +277,8 @@ class KoiRequestExecutor {
     );
   }
 
-  /// 执行快速请求（不显示加载，但显示错误）
-  /// Execute a quick request (does not show loading, but shows errors)
+  /// 执行快速请求，不显示加载但会显示错误。
+  /// Executes a quick request that hides loading but still shows errors.
   static Future<T?> executeQuick<T>({
     required Future<Response<dynamic>> Function() request,
     T Function(dynamic json)? fromJson,
@@ -304,8 +304,8 @@ class KoiRequestExecutor {
     );
   }
 
-  /// 执行批量请求
-  /// Execute batch requests
+  /// 执行批量请求。
+  /// Executes a batch of requests.
   static Future<List<T?>> executeBatch<T>(
     List<Future<Response<dynamic>> Function()> requests, {
     T Function(dynamic json)? fromJson,
@@ -378,8 +378,8 @@ class KoiRequestExecutor {
     }
   }
 
-  /// 执行单个批量请求中的请求
-  /// Execute a single request within a batch
+  /// 执行批量请求中的单个请求。
+  /// Executes a single request inside a batch.
   static Future<T?> _executeSingleInBatch<T>(
     Future<Response<dynamic>> Function() request, {
     T Function(dynamic json)? fromJson,
@@ -440,14 +440,14 @@ class KoiRequestExecutor {
     }
   }
 
-  /// 执行重试请求
-  /// Execute a request with automatic retries
+  /// 执行带重试的请求。
+  /// Executes a request with retry support.
   ///
   /// ⚠️ 注意：Dio 已通过 dio_smart_retry 拦截器自动处理网络层重试。
   /// ⚠️ Note: Dio already handles network-layer retries automatically via the dio_smart_retry interceptor.
   ///
-  /// 此方法主要用于应用层的业务逻辑重试（如业务错误码重试）。
-  /// This method is primarily used for application-layer business logic retries (e.g., retrying on business error codes).
+  /// 此方法主要用于应用层业务逻辑重试，例如业务错误码重试。
+  /// This method is mainly intended for application-layer retries, such as retrying on business error codes.
   static Future<T?> executeWithRetry<T>({
     required Future<Response<dynamic>> Function() request,
     T Function(dynamic json)? fromJson,
@@ -500,8 +500,8 @@ class KoiRequestExecutor {
     return null;
   }
 
-  /// 获取错误消息
-  /// Get error message
+  /// 获取错误消息。
+  /// Converts an exception into a user-facing error message.
   static String getErrorMessage(Object e) {
     if (e is RequestLogicException) {
       return e.message;

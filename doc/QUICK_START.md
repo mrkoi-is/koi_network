@@ -1,6 +1,6 @@
-# YX Network 快速开始指南
+# Koi Network 快速开始指南
 
-5 分钟快速上手 YX Network 网络库 ⚡
+5 分钟快速上手 Koi Network 网络库
 
 ---
 
@@ -10,8 +10,7 @@
 
 ```yaml
 dependencies:
-  yx_network:
-    path: ../packages/yx_network  # 根据实际路径调整
+  koi_network: ^0.2.0
 ```
 
 运行：
@@ -29,17 +28,17 @@ flutter pub get
 
 ```dart
 // oa_app/lib/adapters/network/oa_auth_adapter.dart
-import 'package:yx_network/yx_network.dart';
+import 'package:koi_network/koi_network.dart';
 import 'package:oa_core/oa_core.dart';
 
-class OaAuthAdapter extends YxAuthAdapter with YxJwtTokenMixin {
+class OaAuthAdapter extends KoiAuthAdapter with KoiJwtTokenMixin {
   @override
   String? getToken() => UserStore.to.token.value;
   
   @override
   Future<bool> refresh() async {
     // 实现你的 Token 刷新逻辑
-    final dio = YxDioFactory.createTokenDio();
+    final dio = KoiDioFactory.createTokenDio(null);
     final response = await dio.post('/auth/refresh');
     await saveToken(response.data['access_token']);
     return true;
@@ -71,7 +70,7 @@ class OaAuthAdapter extends YxAuthAdapter with YxJwtTokenMixin {
 
 ```dart
 // oa_app/lib/services/network_adapter_registry.dart
-import 'package:yx_network/yx_network.dart';
+import 'package:koi_network/koi_network.dart';
 import '../adapters/network/oa_auth_adapter.dart';
 import '../adapters/network/oa_error_handler_adapter.dart';
 import '../adapters/network/oa_loading_adapter.dart';
@@ -80,7 +79,7 @@ import '../adapters/network/oa_logger_adapter.dart';
 
 class NetworkAdapterRegistry {
   static void registerAdapters() {
-    YxNetworkAdapters.register(
+    KoiNetworkAdapters.register(
       authAdapter: OaAuthAdapter(),
       errorHandlerAdapter: OaErrorHandlerAdapter(),
       loadingAdapter: OaLoadingAdapter(),
@@ -101,7 +100,7 @@ class NetworkAdapterRegistry {
 ```dart
 // oa_app/lib/main.dart
 import 'package:flutter/material.dart';
-import 'package:yx_network/yx_network.dart';
+import 'package:koi_network/koi_network.dart';
 import 'services/network_adapter_registry.dart';
 
 void main() async {
@@ -111,7 +110,7 @@ void main() async {
   NetworkAdapterRegistry.registerAdapters();
   
   // 2. 初始化网络服务
-  await YxNetworkInitializer.initialize(
+  await KoiNetworkInitializer.initialize(
     baseUrl: 'https://api.example.com',
     environment: 'development',
   );
@@ -128,7 +127,7 @@ void main() async {
 // oa_app/lib/main.dart
 import 'package:flutter/material.dart';
 import 'package:oa_core/oa_core.dart';
-import 'package:yx_network/yx_network.dart';
+import 'package:koi_network/koi_network.dart';
 import 'services/network_adapter_registry.dart';
 
 void main() async {
@@ -138,13 +137,13 @@ void main() async {
   NetworkAdapterRegistry.registerAdapters();
   
   // 2. 初始化多个网络模块
-  await YxNetworkInitializer.initialize(
+  await KoiNetworkInitializer.initialize(
     baseUrl: 'https://api-common.example.com',
     environment: 'development',
     key: NetworkModuleKeys.main,  // 使用常量，避免硬编码
   );
   
-  await YxNetworkInitializer.initialize(
+  await KoiNetworkInitializer.initialize(
     baseUrl: 'https://api-module1.example.com',
     environment: 'development',
     key: NetworkModuleKeys.highSchool,
@@ -170,7 +169,7 @@ void main() async {
 import 'package:get/get.dart';
 import 'package:oa_core/oa_core.dart';
 
-class MyController extends GetxController with YxNetworkRequestMixin {
+class MyController extends GetxController with KoiNetworkRequestMixin {
   Future<void> loadData() async {
     // 通用请求（显示加载、显示错误）
     final data = await universalRequest<MyData>(
@@ -195,7 +194,7 @@ class MyController extends GetxController with YxNetworkRequestMixin {
 
 ## ✅ 完成！
 
-现在你已经成功集成了 YX Network！🎉
+现在你已经成功集成了 Koi Network。
 
 ### 下一步
 

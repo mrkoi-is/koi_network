@@ -11,20 +11,20 @@ import 'package:koi_network/src/interceptors/token_refresh_interceptor.dart';
 import 'package:koi_network/src/koi_network_constants.dart';
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 
-/// Koi Dio 工厂类
-/// Koi Dio Factory Class
+/// Koi Dio 工厂类。
+/// Factory for creating and managing Dio instances in Koi Network.
 ///
 /// 基于 Dio 官方最佳实践设计，提供：
-/// Designed based on official Dio best practices, providing:
+/// Built on Dio best practices and provides:
 /// - 统一的 Dio 实例创建 / Unified Dio instance creation
 /// - 智能拦截器管理 / Smart interceptor management
-/// - 环境相关配置 / Environment-related configuration
-/// - 性能优化 / Performance optimization
+/// - 环境相关配置 / Environment-aware configuration
+/// - 性能优化 / Performance optimizations
 class KoiDioFactory {
   static final Map<String, Dio> _dioInstances = {};
 
-  /// 创建主要的 Dio 实例
-  /// Create the main Dio instance
+  /// 创建主 Dio 实例。
+  /// Creates the main Dio instance.
   static Dio createMainDio(KoiNetworkConfig? config, {String key = 'main'}) {
     // 如果传入了 config，且缓存实例存在，检查是否需要重新创建
     // If config is passed and a cached instance exists, check if recreation is needed
@@ -57,8 +57,8 @@ class KoiDioFactory {
     return dio;
   }
 
-  /// 创建 Token 刷新专用的 Dio 实例
-  /// Create a dedicated Dio instance for Token refresh
+  /// 创建 token 刷新专用的 Dio 实例。
+  /// Creates a dedicated Dio instance for token refresh.
   static Dio createTokenDio(KoiNetworkConfig? config, {String key = 'token'}) {
     // 如果传入了 config，且缓存实例存在，检查是否需要重新创建
     // If config is passed and a cached instance exists, check if recreation is needed
@@ -90,8 +90,8 @@ class KoiDioFactory {
     return dio;
   }
 
-  /// 创建自定义 Dio 实例
-  /// Create a custom Dio instance
+  /// 创建自定义 Dio 实例。
+  /// Creates a custom Dio instance.
   static Dio createCustomDio(
     String key,
     KoiNetworkConfig config, {
@@ -122,8 +122,8 @@ class KoiDioFactory {
     return dio;
   }
 
-  /// 创建基础 Dio 实例
-  /// Creates a base Dio instance
+  /// 创建基础 Dio 实例。
+  /// Creates a base Dio instance.
   static Dio _createDio(KoiNetworkConfig config) {
     final dio = Dio(
       BaseOptions(
@@ -146,8 +146,8 @@ class KoiDioFactory {
     return dio;
   }
 
-  /// 添加完整拦截器
-  /// Add complete interceptors
+  /// 添加完整拦截器链。
+  /// Adds the full interceptor chain.
   static void _addInterceptors(Dio dio, KoiNetworkConfig config) {
     // 清除现有拦截器
     // Clear existing interceptors
@@ -243,8 +243,8 @@ class KoiDioFactory {
     }
   }
 
-  /// 添加基础拦截器（用于 Token 刷新实例）
-  /// Add basic interceptors (for Token refresh instance)
+  /// 添加基础拦截器，主要用于 token 刷新实例。
+  /// Adds the minimal interceptor set, mainly for the token refresh instance.
   static void _addBasicInterceptors(Dio dio, KoiNetworkConfig config) {
     // 清除现有拦截器
     // Clear existing interceptors
@@ -261,8 +261,8 @@ class KoiDioFactory {
     }
   }
 
-  /// 获取实例信息
-  /// Get instance information
+  /// 获取实例信息。
+  /// Returns information for a specific Dio instance.
   static Map<String, dynamic> getInstanceInfo(String key) {
     final dio = _dioInstances[key];
     if (dio == null) {
@@ -279,8 +279,8 @@ class KoiDioFactory {
     };
   }
 
-  /// 获取所有实例信息
-  /// Get all instances information
+  /// 获取所有实例信息。
+  /// Returns information for all Dio instances.
   static Map<String, dynamic> getAllInstancesInfo() {
     final info = <String, dynamic>{};
     for (final key in _dioInstances.keys) {
@@ -289,8 +289,8 @@ class KoiDioFactory {
     return info;
   }
 
-  /// 打印工厂信息
-  /// Print factory info
+  /// 打印工厂状态信息。
+  /// Logs factory status information.
   static void printFactoryInfo() {
     if (KoiNetworkConstants.debugEnabled) {
       KoiNetworkAdapters.logger.info('🏭 Koi Dio Factory status:');
@@ -309,8 +309,8 @@ class KoiDioFactory {
     }
   }
 
-  /// 清理指定实例
-  /// Dispose specific instance
+  /// 清理指定实例。
+  /// Disposes a specific Dio instance.
   static void disposeInstance(String key) {
     final dio = _dioInstances.remove(key);
     if (dio != null) {
@@ -321,8 +321,8 @@ class KoiDioFactory {
     }
   }
 
-  /// 清理所有实例
-  /// Dispose all instances
+  /// 清理所有实例。
+  /// Disposes all Dio instances.
   static void disposeAll() {
     for (final entry in _dioInstances.entries) {
       entry.value.close();
@@ -334,8 +334,8 @@ class KoiDioFactory {
     }
   }
 
-  /// 重新创建实例
-  /// Recreate an instance
+  /// 重新创建实例。
+  /// Recreates a Dio instance.
   static Dio recreateInstance(String key, KoiNetworkConfig config) {
     disposeInstance(key);
 
@@ -350,19 +350,19 @@ class KoiDioFactory {
     return createMainDio(config, key: key);
   }
 
-  /// 获取实例数量
-  /// Get instance count
+  /// 获取实例数量。
+  /// Returns the number of cached instances.
   static int get instanceCount => _dioInstances.length;
 
-  /// 获取所有实例键
-  /// Get all instance keys
+  /// 获取所有实例键。
+  /// Returns all cached instance keys.
   static List<String> get instanceKeys => _dioInstances.keys.toList();
 
-  /// 检查实例是否存在
-  /// Check if instance exists
+  /// 检查实例是否存在。
+  /// Returns whether a cached instance exists for the key.
   static bool hasInstance(String key) => _dioInstances.containsKey(key);
 
-  /// 获取实例（如果存在）
-  /// Get instance (if it exists)
+  /// 获取实例（如果存在）。
+  /// Returns the cached instance if it exists.
   static Dio? getInstance(String key) => _dioInstances[key];
 }
