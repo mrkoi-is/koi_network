@@ -1,56 +1,53 @@
-[简体中文](README_ZH.md) | English
+简体中文 | [English](README.md)
 
 # Koi Network
 
 [![pub package](https://img.shields.io/pub/v/koi_network.svg)](https://pub.dev/packages/koi_network)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-A flexible Dio-based networking library for Dart and Flutter projects.
+基于 Dio 的灵活网络请求库，适用于 Dart 和 Flutter 项目。
 
-`koi_network` provides a reusable network layer with adapter-based integration,
-configurable response parsing, request execution helpers, token refresh,
-retry, caching, and multi-module Dio management.
+`koi_network` 提供可复用的网络层：基于适配器的集成架构、可配置的响应解析、
+请求执行辅助器、Token 刷新、重试、缓存，以及多模块 Dio 管理。
 
-## Why Koi Network
+## 为什么选择 Koi Network
 
-Many projects need the same network capabilities, but do not want to bind the
-network layer to a specific UI framework, state management solution, or backend
-response format.
+许多项目需要相同的网络能力，但不希望将网络层绑定到特定的 UI 框架、
+状态管理方案或后端响应格式。
 
-`koi_network` solves that by separating infrastructure from project-specific
-logic:
+`koi_network` 通过将基础设施与项目特定逻辑分离来解决这个问题：
 
-- Adapter-based auth, loading, error handling, platform, logging, parsing, and request encoding
-- Works with custom response envelopes such as `{code, msg, data}` or other backend formats
-- Built-in request execution patterns for normal, silent, quick, batch, and retry flows
-- Proactive and reactive token refresh support
-- Optional retry and cache support through Dio middleware
-- Support for both raw Dio responses and already typed API wrappers
+- 基于适配器的认证、加载、错误处理、平台、日志、解析和请求编码
+- 兼容自定义响应信封格式，如 `{code, msg, data}` 或其他后端格式
+- 内置请求执行模式：普通、静默、快速、批量和重试
+- 支持主动和被动 Token 刷新
+- 通过 Dio 中间件可选支持重试和缓存
+- 同时支持原始 Dio 响应和已类型化的 API 包装器
 
-## Installation
+## 安装
 
-Add the package to your `pubspec.yaml`:
+在你的 `pubspec.yaml` 中添加：
 
 ```yaml
 dependencies:
   koi_network: ^0.0.1
 ```
 
-Then install dependencies:
+然后安装依赖：
 
 ```bash
 dart pub get
 ```
 
-If you use Flutter, `flutter pub get` also works.
+如果使用 Flutter，`flutter pub get` 同样可用。
 
-## Minimal Setup
+## 最小配置
 
-The smallest working setup is:
+最简设置只需三步：
 
-1. Register adapters
-2. Initialize the network layer
-3. Get a Dio instance and make requests
+1. 注册适配器
+2. 初始化网络层
+3. 获取 Dio 实例并发起请求
 
 ```dart
 import 'package:koi_network/koi_network.dart';
@@ -71,7 +68,7 @@ Future<void> setupNetwork() async {
 }
 ```
 
-After initialization:
+初始化完成后：
 
 ```dart
 final dio = KoiNetworkServiceManager.instance.mainDio;
@@ -81,12 +78,11 @@ final profile = await KoiRequestExecutor.execute<Map<String, dynamic>>(
 );
 ```
 
-## Custom Adapters
+## 自定义适配器
 
-In real projects, you usually replace the default adapters with application
-implementations.
+在实际项目中，通常需要用应用实现替换默认适配器。
 
-Example auth adapter with JWT support:
+JWT 认证适配器示例：
 
 ```dart
 import 'package:dio/dio.dart';
@@ -148,7 +144,7 @@ class MyErrorHandler extends KoiErrorHandlerAdapter {
 
   @override
   Future<bool> handleAuthError({int? statusCode, String? message}) async {
-    // For example: clear session and redirect to login
+    // 例如：清除会话并跳转到登录页
     return true;
   }
 
@@ -159,11 +155,11 @@ class MyErrorHandler extends KoiErrorHandlerAdapter {
 }
 ```
 
-## Request Execution
+## 请求执行
 
-`KoiRequestExecutor` is the main entry point for standard Dio requests.
+`KoiRequestExecutor` 是标准 Dio 请求的主要入口。
 
-### Parse JSON into a model
+### 解析 JSON 为模型
 
 ```dart
 final user = await KoiRequestExecutor.execute<User>(
@@ -172,7 +168,7 @@ final user = await KoiRequestExecutor.execute<User>(
 );
 ```
 
-### Silent request
+### 静默请求
 
 ```dart
 final settings = await KoiRequestExecutor.executeSilent<Map<String, dynamic>>(
@@ -180,7 +176,7 @@ final settings = await KoiRequestExecutor.executeSilent<Map<String, dynamic>>(
 );
 ```
 
-### Quick request
+### 快速请求
 
 ```dart
 final notifications = await KoiRequestExecutor.executeQuick<List<dynamic>>(
@@ -188,7 +184,7 @@ final notifications = await KoiRequestExecutor.executeQuick<List<dynamic>>(
 );
 ```
 
-### Batch request
+### 批量请求
 
 ```dart
 final results = await KoiRequestExecutor.executeBatch<Map<String, dynamic>>(
@@ -204,7 +200,7 @@ final results = await KoiRequestExecutor.executeBatch<Map<String, dynamic>>(
 );
 ```
 
-### Retry at the application layer
+### 应用层重试
 
 ```dart
 final criticalData = await KoiRequestExecutor.executeWithRetry<MyData>(
@@ -215,10 +211,10 @@ final criticalData = await KoiRequestExecutor.executeWithRetry<MyData>(
 );
 ```
 
-## Use the Mixin
+## 使用 Mixin
 
-For controllers or business classes that repeatedly issue requests,
-`KoiNetworkRequestMixin` provides a simpler API.
+对于需要频繁发起请求的控制器或业务类，
+`KoiNetworkRequestMixin` 提供了更简洁的 API。
 
 ```dart
 import 'package:dio/dio.dart';
@@ -238,7 +234,7 @@ class UserController with KoiNetworkRequestMixin {
 }
 ```
 
-Common helpers:
+常用辅助方法：
 
 - `universalRequest`
 - `silentRequest`
@@ -246,10 +242,10 @@ Common helpers:
 - `batchRequest`
 - `retryRequest`
 
-## Typed Response Support
+## 类型化响应支持
 
-If your API layer already returns typed response wrappers, implement
-`KoiTypedResponse<T>` and use `KoiTypedRequestExecutor`.
+如果你的 API 层已经返回类型化响应包装器，实现
+`KoiTypedResponse<T>` 并使用 `KoiTypedRequestExecutor`。
 
 ```dart
 class BaseResult<T> implements KoiTypedResponse<T> {
@@ -279,21 +275,21 @@ final user = await KoiTypedRequestExecutor.execute<User>(
 );
 ```
 
-## Token Refresh
+## Token 刷新
 
-`koi_network` supports two refresh paths:
+`koi_network` 支持两种刷新路径：
 
-- Proactive refresh before token expiration
-- Reactive refresh after authentication failures
+- 主动刷新：在 Token 过期前刷新
+- 被动刷新：在认证失败后刷新
 
-Recommended JWT setup:
+推荐的 JWT 配置：
 
-- implement `KoiAuthAdapter`
-- mix in `KoiJwtTokenMixin`
-- use `KoiDioFactory.createTokenDio(null)` inside `refresh()`
-- add login and refresh endpoints to `tokenRefreshWhiteList`
+- 实现 `KoiAuthAdapter`
+- 混入 `KoiJwtTokenMixin`
+- 在 `refresh()` 中使用 `KoiDioFactory.createTokenDio(null)`
+- 将登录和刷新端点添加到 `tokenRefreshWhiteList`
 
-Example:
+示例：
 
 ```dart
 await KoiNetworkInitializer.initialize(
@@ -303,9 +299,9 @@ await KoiNetworkInitializer.initialize(
 );
 ```
 
-## Multi-Module Support
+## 多模块支持
 
-You can initialize more than one backend module in the same app.
+你可以在同一应用中初始化多个后端模块。
 
 ```dart
 await KoiNetworkInitializer.initialize(
@@ -322,29 +318,29 @@ final ordersDio =
     KoiNetworkServiceManager.instance.getModuleDio('orders');
 ```
 
-## Using with Retrofit / Swagger
+## 配合 Retrofit / Swagger 使用
 
-`koi_network` is designed as infrastructure — it does **not** generate API clients.
-For type-safe endpoint definitions, pair it with [retrofit](https://pub.dev/packages/retrofit)
-and optionally a Swagger/OpenAPI code generator.
+`koi_network` 定位为基础设施层 — 它**不负责**生成 API 客户端。
+如需类型安全的端点定义，请搭配 [retrofit](https://pub.dev/packages/retrofit)
+以及可选的 Swagger/OpenAPI 代码生成器使用。
 
-### Recommended architecture
+### 推荐架构
 
 ```
-Swagger/OpenAPI doc
-       ↓  (code generation)
+Swagger/OpenAPI 文档
+       ↓  (代码生成)
 ┌──────────────────────┐
-│  API Client Layer    │  ← LoginApi, OrderApi (Retrofit annotations)
-│  ApiClient aggregate │  ← groups all APIs into one entry point
+│  API Client 层       │  ← LoginApi, OrderApi (Retrofit 注解)
+│  ApiClient 聚合      │  ← 将所有 API 汇聚到一个入口
 ├──────────────────────┤
-│  koi_network         │  ← Dio management, interceptors, token refresh,
+│  koi_network         │  ← Dio 管理, 拦截器, Token 刷新,
 │                      │     KoiTypedRequestExecutor
 ├──────────────────────┤
-│  Dio                 │  ← HTTP transport
+│  Dio                 │  ← HTTP 传输
 └──────────────────────┘
 ```
 
-### Step 1: Define a Retrofit API
+### 第一步：定义 Retrofit API
 
 ```dart
 import 'package:dio/dio.dart';
@@ -364,7 +360,7 @@ abstract class UserApi {
 }
 ```
 
-### Step 2: Create an API client aggregate
+### 第二步：创建 API Client 聚合
 
 ```dart
 class MyApiClient {
@@ -377,38 +373,37 @@ class MyApiClient {
 }
 ```
 
-### Step 3: Wire it up with koi_network
+### 第三步：接入 koi_network
 
 ```dart
 final dio = KoiNetworkServiceManager.instance.mainDio;
 final api = MyApiClient(dio);
 
-// Use KoiTypedRequestExecutor for automatic error handling
+// 使用 KoiTypedRequestExecutor 自动处理错误
 final profile = await KoiTypedRequestExecutor.execute<UserProfile>(
   request: () => api.user.getProfile(),
 );
 ```
 
-### Swagger / OpenAPI code generation
+### Swagger / OpenAPI 代码生成
 
-If your backend provides a Swagger doc, use a code generator to
-auto-create the Retrofit API classes and model files:
+如果你的后端提供 Swagger 文档，可以使用代码生成器
+自动创建 Retrofit API 类和模型文件：
 
 ```bash
-# Example with swagger_generator_flutter
+# 使用 swagger_generator_flutter 的示例
 dart run swagger_generator_flutter generate --all
 flutter pub run build_runner build --delete-conflicting-outputs
 ```
 
-Generated files typically output to:
-- `lib/api/` — Retrofit API interfaces
-- `lib/api_models/` — Request/response model classes
+生成的文件通常输出到：
+- `lib/api/` — Retrofit API 接口
+- `lib/api_models/` — 请求/响应模型类
 
-> **Tip:** `koi_network` stays completely decoupled from the generator.
-> You can switch generators, hand-write APIs, or mix both — the Dio
-> instance and request executors work the same way.
+> **提示：** `koi_network` 与生成器完全解耦。
+> 你可以更换生成器、手写 API 或混合使用 — Dio 实例和请求执行器的用法不变。
 
-## Main Public APIs
+## 主要公共 API
 
 - `KoiNetworkAdapters`
 - `KoiNetworkInitializer`
@@ -421,15 +416,15 @@ Generated files typically output to:
 - `KoiResponseParser`
 - `KoiRequestEncoder`
 
-## Documentation
+## 文档
 
-- [Quick Start](doc/QUICK_START.md)
-- [Usage Examples](doc/USAGE_EXAMPLE.md)
-- [Token Refresh Guide](doc/TOKEN_REFRESH_GUIDE.md)
-- [Testing Guide](doc/TESTING_GUIDE.md)
-- [Tech Stack](doc/TECH_STACK.md)
-- [Changelog](CHANGELOG.md)
+- [快速开始](doc/QUICK_START.md)
+- [使用示例](doc/USAGE_EXAMPLE.md)
+- [Token 刷新指南](doc/TOKEN_REFRESH_GUIDE.md)
+- [测试指南](doc/TESTING_GUIDE.md)
+- [技术栈](doc/TECH_STACK.md)
+- [更新日志](CHANGELOG.md)
 
-## License
+## 许可证
 
-MIT. See [LICENSE](LICENSE).
+MIT. 详见 [LICENSE](LICENSE)。

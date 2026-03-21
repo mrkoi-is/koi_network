@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.2] - 2026-03-21
+
+### Added
+- Chinese README (`README_ZH.md`) with language switch links
+- Retrofit / Swagger integration guide in README
+- GitHub Actions CI workflow (analyze + test on PRs)
+
 ## [0.0.1] - 2026-03-17
 
 ### Added
