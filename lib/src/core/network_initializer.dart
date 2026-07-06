@@ -1,6 +1,8 @@
 import 'package:koi_network/src/adapters/network_adapters.dart';
 import 'package:koi_network/src/config/network_config.dart';
 import 'package:koi_network/src/core/network_service_manager.dart';
+import 'package:koi_network/src/interceptors/auth_interceptor.dart'
+    show KoiHeaderBuilder;
 import 'package:koi_network/src/koi_network_constants.dart';
 
 /// Koi 网络初始化器。
@@ -64,6 +66,7 @@ class KoiNetworkInitializer {
     bool enableLogging = false,
     bool enableProactiveTokenRefresh = true,
     String key = 'main',
+    List<KoiHeaderBuilder>? headerBuilders,
   }) async {
     try {
       // 检查适配器是否已注册
@@ -83,6 +86,7 @@ class KoiNetworkInitializer {
         tokenRefreshWhiteList: tokenRefreshWhiteList,
         enableLogging: enableLogging,
         enableProactiveTokenRefresh: enableProactiveTokenRefresh,
+        headerBuilders: headerBuilders,
       );
 
       // 初始化服务
@@ -149,6 +153,7 @@ class KoiNetworkInitializer {
     List<String>? tokenRefreshWhiteList,
     bool enableLogging = false,
     bool enableProactiveTokenRefresh = true,
+    List<KoiHeaderBuilder>? headerBuilders,
   }) {
     switch (environment.toLowerCase()) {
       case 'production':
@@ -158,6 +163,7 @@ class KoiNetworkInitializer {
           customHeaders: customHeaders,
           tokenRefreshWhiteList: tokenRefreshWhiteList,
           enableProactiveTokenRefresh: enableProactiveTokenRefresh,
+          headerBuilders: headerBuilders,
         );
 
       case 'testing':
@@ -168,6 +174,7 @@ class KoiNetworkInitializer {
           tokenRefreshWhiteList: tokenRefreshWhiteList,
           enableLogging: enableLogging,
           enableProactiveTokenRefresh: enableProactiveTokenRefresh,
+          headerBuilders: headerBuilders,
         );
 
       case 'development':
@@ -179,6 +186,7 @@ class KoiNetworkInitializer {
           tokenRefreshWhiteList: tokenRefreshWhiteList,
           enableLogging: enableLogging,
           enableProactiveTokenRefresh: enableProactiveTokenRefresh,
+          headerBuilders: headerBuilders,
         );
     }
   }
@@ -219,6 +227,7 @@ class KoiNetworkInitializer {
     bool enableLogging = false,
     List<String>? tokenRefreshWhiteList,
     String key = 'main',
+    List<KoiHeaderBuilder>? headerBuilders,
   }) async {
     final config = _createConfig(
       baseUrl: baseUrl,
@@ -227,6 +236,7 @@ class KoiNetworkInitializer {
 
       tokenRefreshWhiteList: tokenRefreshWhiteList,
       enableLogging: enableLogging,
+      headerBuilders: headerBuilders,
     );
 
     await KoiNetworkServiceManager.instance.reinitialize(

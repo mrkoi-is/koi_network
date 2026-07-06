@@ -15,7 +15,7 @@
 
 ```yaml
 dependencies:
-  koi_network: ^0.0.1
+  koi_network: ^0.0.3
 ```
 
 安装依赖：

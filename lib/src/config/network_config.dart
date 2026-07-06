@@ -3,6 +3,8 @@
 library;
 
 import 'package:koi_network/src/adapters/network_adapters.dart';
+import 'package:koi_network/src/interceptors/auth_interceptor.dart'
+    show KoiHeaderBuilder;
 
 /// Koi 网络配置对象。
 /// Configuration object for Koi Network.
@@ -29,6 +31,7 @@ class KoiNetworkConfig {
     required this.enableProactiveTokenRefresh,
     required this.tokenRefreshThreshold,
     required this.tokenRefreshWhiteList,
+    this.headerBuilders = const [],
   });
 
   /// 创建自定义配置。
@@ -50,6 +53,7 @@ class KoiNetworkConfig {
     bool? enableProactiveTokenRefresh,
     Duration? tokenRefreshThreshold,
     List<String>? tokenRefreshWhiteList,
+    List<KoiHeaderBuilder>? headerBuilders,
   }) {
     // 环境检测
     const isProd = bool.fromEnvironment('dart.vm.product');
@@ -75,6 +79,7 @@ class KoiNetworkConfig {
       tokenRefreshThreshold:
           tokenRefreshThreshold ?? const Duration(minutes: 5),
       tokenRefreshWhiteList: tokenRefreshWhiteList ?? [],
+      headerBuilders: headerBuilders ?? const [],
     );
   }
 
@@ -86,6 +91,7 @@ class KoiNetworkConfig {
     List<String>? tokenRefreshWhiteList,
     bool enableLogging = false,
     bool? enableProactiveTokenRefresh,
+    List<KoiHeaderBuilder>? headerBuilders,
   }) {
     return KoiNetworkConfig.create(
       baseUrl: baseUrl ?? 'http://localhost:8080',
@@ -101,6 +107,7 @@ class KoiNetworkConfig {
       customHeaders: customHeaders,
       tokenRefreshWhiteList: tokenRefreshWhiteList,
       enableProactiveTokenRefresh: enableProactiveTokenRefresh,
+      headerBuilders: headerBuilders,
     );
   }
 
@@ -112,6 +119,7 @@ class KoiNetworkConfig {
     List<String>? tokenRefreshWhiteList,
     bool enableLogging = false,
     bool? enableProactiveTokenRefresh,
+    List<KoiHeaderBuilder>? headerBuilders,
   }) {
     assert(
       baseUrl != null && baseUrl.isNotEmpty,
@@ -128,6 +136,7 @@ class KoiNetworkConfig {
       customHeaders: customHeaders,
       tokenRefreshWhiteList: tokenRefreshWhiteList,
       enableProactiveTokenRefresh: enableProactiveTokenRefresh,
+      headerBuilders: headerBuilders,
     );
   }
 
@@ -139,6 +148,7 @@ class KoiNetworkConfig {
     List<String>? tokenRefreshWhiteList,
     bool enableLogging = false,
     bool? enableProactiveTokenRefresh,
+    List<KoiHeaderBuilder>? headerBuilders,
   }) {
     return KoiNetworkConfig.create(
       baseUrl: baseUrl,
@@ -154,6 +164,7 @@ class KoiNetworkConfig {
       customHeaders: customHeaders,
       tokenRefreshWhiteList: tokenRefreshWhiteList,
       enableProactiveTokenRefresh: enableProactiveTokenRefresh,
+      headerBuilders: headerBuilders,
     );
   }
 
@@ -224,6 +235,10 @@ class KoiNetworkConfig {
   /// Token 刷新拦截器白名单。
   /// Whitelist for token refresh interception.
   final List<String> tokenRefreshWhiteList;
+
+  /// Header 构建器列表。
+  /// List of header builder callbacks for injecting dynamic headers.
+  final List<KoiHeaderBuilder> headerBuilders;
 
   /// 配置是否有效。
   /// Returns whether the configuration is valid.
@@ -345,6 +360,7 @@ class KoiNetworkConfig {
     bool? enableProactiveTokenRefresh,
     Duration? tokenRefreshThreshold,
     List<String>? tokenRefreshWhiteList,
+    List<KoiHeaderBuilder>? headerBuilders,
   }) {
     // coverage:ignore-start
     return KoiNetworkConfig._(
@@ -369,6 +385,7 @@ class KoiNetworkConfig {
           tokenRefreshThreshold ?? this.tokenRefreshThreshold,
       tokenRefreshWhiteList:
           tokenRefreshWhiteList ?? this.tokenRefreshWhiteList,
+      headerBuilders: headerBuilders ?? this.headerBuilders,
     );
     // coverage:ignore-end
   }

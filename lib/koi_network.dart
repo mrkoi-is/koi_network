@@ -35,6 +35,7 @@
 library;
 
 // ==================== 第三方导出 / Third-party Exports ====================
+export 'package:dio/dio.dart';
 
 // ==================== 适配器 / Adapters ====================
 export 'src/adapters/auth_adapter.dart';

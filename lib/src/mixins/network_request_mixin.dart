@@ -228,6 +228,26 @@ mixin KoiNetworkRequestMixin {
       dataCheck: dataCheck,
     );
   }
+
+  /// 强类型批量请求。
+  /// Executes a batch of typed requests.
+  Future<List<T?>> typedBatchRequest<T>(
+    List<Future<KoiTypedResponse<T>> Function()> requests, {
+    bool concurrent = true,
+    bool showLoading = true,
+    String? loadingText,
+    bool stopOnFirstError = false,
+  }) async {
+    return KoiTypedRequestExecutor.executeBatch<T>(
+      requests,
+      options: TypedBatchRequestOptions(
+        concurrent: concurrent,
+        showLoading: showLoading,
+        loadingText: loadingText,
+        stopOnFirstError: stopOnFirstError,
+      ),
+    );
+  }
 }
 
 /// 网络请求工具类。
@@ -341,6 +361,26 @@ class NetworkRequestUtils {
       onSuccess: onSuccess,
       onError: onError,
       onFinally: onFinally,
+    );
+  }
+
+  /// 强类型批量请求。
+  /// Executes a batch of typed requests.
+  static Future<List<T?>> typedBatchRequest<T>(
+    List<Future<KoiTypedResponse<T>> Function()> requests, {
+    bool concurrent = true,
+    bool showLoading = true,
+    String? loadingText,
+    bool stopOnFirstError = false,
+  }) async {
+    return KoiTypedRequestExecutor.executeBatch<T>(
+      requests,
+      options: TypedBatchRequestOptions(
+        concurrent: concurrent,
+        showLoading: showLoading,
+        loadingText: loadingText,
+        stopOnFirstError: stopOnFirstError,
+      ),
     );
   }
 }

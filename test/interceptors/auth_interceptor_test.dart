@@ -126,23 +126,23 @@ void main() {
         verify(() => handler.next(options)).called(1);
       });
 
-      test('已有 Authorization 头时应覆盖', () async {
+      test('header builder 已注入 Authorization 时不应被覆盖', () async {
         // Arrange
         final options = RequestOptions(
           path: '/api/test',
-          headers: {'Authorization': 'Bearer old_token'},
+          headers: {'Authorization': 'Bearer builder_injected'},
         );
         final handler = MockRequestInterceptorHandler();
 
-        when(() => mockAuthAdapter.getToken()).thenReturn('new_token');
+        when(() => mockAuthAdapter.getToken()).thenReturn('adapter_token');
         when(() => handler.next(any())).thenReturn(null);
 
         // Act
         interceptor.onRequest(options, handler);
         await Future.delayed(const Duration(milliseconds: 100));
 
-        // Assert
-        expect(options.headers['Authorization'], 'Bearer new_token');
+        // Assert — builder-injected token should be preserved
+        expect(options.headers['Authorization'], 'Bearer builder_injected');
         verify(() => handler.next(options)).called(1);
       });
     });

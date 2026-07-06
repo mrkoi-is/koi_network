@@ -72,10 +72,10 @@ class KoiDefaultResponseParser implements KoiResponseParser {
   /// 构造函数。
   /// Creates a default response parser.
   ///
-  /// [successCodes] 成功状态码列表，默认为 [200, 0]
-  /// [successCodes] List of successful status codes, default is [200, 0]
-  /// [authErrorHttpCodes] 认证错误 HTTP 状态码列表，默认为 [401, 403]
-  /// [authErrorHttpCodes] List of authentication error HTTP status codes, default is [401, 403]
+  /// [successCodes] 成功状态码列表，默认为 `200` 和 `0`。
+  /// [successCodes] List of successful status codes, defaulting to `200` and `0`.
+  /// [authErrorHttpCodes] 认证错误 HTTP 状态码列表，默认为 `401` 和 `403`。
+  /// [authErrorHttpCodes] List of authentication error HTTP status codes, defaulting to `401` and `403`.
   const KoiDefaultResponseParser({
     this.successCodes = const [200, 0],
     this.authErrorHttpCodes = const [401, 403],

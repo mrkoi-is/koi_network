@@ -1,0 +1,22 @@
+# Generated docs
+doc/api/
+
+# Dart/Flutter build outputs
+.dart_tool/
+build/
+pubspec.lock
+
+# Coverage
+coverage/
+
+# IDE
+*.iml
+.idea/
+.vscode/
+
+# macOS
+.DS_Store
+
+# Flutter plugin artifacts
+.flutter-plugins
+.flutter-plugins-dependencies

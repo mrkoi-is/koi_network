@@ -204,7 +204,9 @@ class KoiDioFactory {
 
     // 3. 添加认证和业务拦截器
     // 3. Add authentication and business interceptors
-    dio.interceptors.add(KoiAuthInterceptor());
+    dio.interceptors.add(
+      KoiAuthInterceptor(headerBuilders: config.headerBuilders),
+    );
     dio.interceptors.add(
       KoiTokenRefreshInterceptor(
         dio,
@@ -252,7 +254,9 @@ class KoiDioFactory {
 
     // 只添加认证拦截器
     // Only add auth interceptor
-    dio.interceptors.add(KoiAuthInterceptor());
+    dio.interceptors.add(
+      KoiAuthInterceptor(headerBuilders: config.headerBuilders),
+    );
 
     // 添加日志拦截器
     // Add logger interceptor

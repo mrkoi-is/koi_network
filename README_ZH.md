@@ -17,7 +17,7 @@
 
 `koi_network` 通过将基础设施与项目特定逻辑分离来解决这个问题：
 
-- 基于适配器的认证、加载、错误处理、平台、日志、解析和请求编码
+- 基于适配器的认证、加载、错误处理、平台、日志、解析、动态 Header 和请求编码
 - 兼容自定义响应信封格式，如 `{code, msg, data}` 或其他后端格式
 - 内置请求执行模式：普通、静默、快速、批量和重试
 - 支持主动和被动 Token 刷新
@@ -30,7 +30,7 @@
 
 ```yaml
 dependencies:
-  koi_network: ^0.0.1
+  koi_network: ^0.0.3
 ```
 
 然后安装依赖：
@@ -75,6 +75,21 @@ final dio = KoiNetworkServiceManager.instance.mainDio;
 
 final profile = await KoiRequestExecutor.execute<Map<String, dynamic>>(
   request: () => dio.get('/user/profile'),
+);
+```
+
+### 动态 Header
+
+当项目需要按请求注入业务 Header，且不希望把业务规则写进网络包时，
+可以使用 `headerBuilders`：
+
+```dart
+await KoiNetworkInitializer.initialize(
+  baseUrl: 'https://api.example.com',
+  environment: 'production',
+  headerBuilders: [
+    (options) async => {'X-Tenant': 'school-a'},
+  ],
 );
 ```
 

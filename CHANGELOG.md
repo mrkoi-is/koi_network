@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.0.3] - 2026-07-06
+
+### Added
+- Export `package:dio/dio.dart` from the public library for convenience.
+- Add `KoiHeaderBuilder` support for injecting dynamic per-request headers.
+- Add typed batch request helpers to `KoiNetworkRequestMixin` and `NetworkRequestUtils`.
+
+### Changed
+- Preserve an externally injected `Authorization` header instead of overwriting it with the auth adapter token.
+- Pass configured header builders through `KoiNetworkInitializer`, `KoiNetworkConfig`, and `KoiDioFactory`.
+
 ## [0.0.2] - 2026-03-21
 
 ### Added

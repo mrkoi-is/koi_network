@@ -20,7 +20,7 @@ response format.
 `koi_network` solves that by separating infrastructure from project-specific
 logic:
 
-- Adapter-based auth, loading, error handling, platform, logging, parsing, and request encoding
+- Adapter-based auth, loading, error handling, platform, logging, parsing, dynamic headers, and request encoding
 - Works with custom response envelopes such as `{code, msg, data}` or other backend formats
 - Built-in request execution patterns for normal, silent, quick, batch, and retry flows
 - Proactive and reactive token refresh support
@@ -33,7 +33,7 @@ Add the package to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  koi_network: ^0.0.1
+  koi_network: ^0.0.3
 ```
 
 Then install dependencies:
@@ -78,6 +78,21 @@ final dio = KoiNetworkServiceManager.instance.mainDio;
 
 final profile = await KoiRequestExecutor.execute<Map<String, dynamic>>(
   request: () => dio.get('/user/profile'),
+);
+```
+
+### Dynamic Headers
+
+Use `headerBuilders` when a project needs to inject request-specific headers
+without hard-coding business rules inside the network package:
+
+```dart
+await KoiNetworkInitializer.initialize(
+  baseUrl: 'https://api.example.com',
+  environment: 'production',
+  headerBuilders: [
+    (options) async => {'X-Tenant': 'school-a'},
+  ],
 );
 ```
 
