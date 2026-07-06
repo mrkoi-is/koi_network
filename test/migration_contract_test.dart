@@ -4,6 +4,8 @@
 /// migrations from project-specific network integrations.
 library;
 
+import 'dart:convert';
+
 import 'package:dio/dio.dart';
 import 'package:koi_network/koi_network.dart' as koi;
 import 'package:koi_network/src/adapters/auth_adapter.dart';
@@ -42,10 +44,6 @@ class FakeRequestOptions extends Fake implements RequestOptions {}
 /// JWT payload: {"expiration":"11/20/2025 10:26:19","ttdateExp":"11/20/2025 10:30:19"}
 const testJwtToken =
     'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0dGRhdGVFeHAiOiIxMS8yMC8yMDI1IDEwOjMwOjE5IiwiZXhwaXJhdGlvbiI6IjExLzIwLzIwMjUgMTA6MjY6MTkiLCJVc2VySWQiOiI3Mjg3MzEyODAwNjQ1ODEiLCJVc2VyTmFtZSI6Iuadjue7hOmVvyJ9.i8_jkMzF_MHsyJV6_fk0zWvFW_HxkX0CFkY_x09mKJo';
-
-/// JWT payload: {"expiration":"12/31/2099 23:59:59","ttdateExp":"12/31/2099 23:59:59"}
-const farFutureJwtToken =
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHBpcmF0aW9uIjoiMTIvMzEvMjA5OSAyMzo1OTo1OSIsInR0ZGF0ZUV4cCI6IjEyLzMxLzIwOTkgMjM6NTk6NTkifQ.onbUQhxUH5Jz1M0pIKYlP_T2iQ9TzD_y8PkaV7msHfE';
 
 void main() {
   setUpAll(() {
@@ -86,13 +84,13 @@ void main() {
     });
 
     test('getCustomExpiration returns null for non-string claim', () {
-      // exp is a standard int claim, not string
+      final token = _createTestToken({'expiration': 12345});
       final expiry = KoiJwtDecoder.getCustomExpiration(
-        farFutureJwtToken,
+        token,
         'expiration',
         (value) => _parseOaDate(value),
       );
-      expect(expiry, isNotNull); // farFutureJwtToken has expiration as string
+      expect(expiry, isNull);
     });
 
     test('getCustomExpiration with empty token returns null', () {
@@ -303,6 +301,14 @@ void main() {
 }
 
 // ========================== Helpers ==========================
+
+String _createTestToken(Map<String, dynamic> payload) {
+  final header = base64Url.encode(
+    utf8.encode(json.encode({'alg': 'HS256', 'typ': 'JWT'})),
+  );
+  final body = base64Url.encode(utf8.encode(json.encode(payload)));
+  return '$header.$body.test_signature';
+}
 
 /// Parse the OA project's custom date format: MM/dd/yyyy HH:mm:ss
 DateTime _parseOaDate(String value) {
