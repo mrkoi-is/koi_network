@@ -97,6 +97,21 @@ await KoiNetworkInitializer.initialize(
 
 在实际项目中，通常需要用应用实现替换默认适配器。
 
+### TLS 默认值
+
+`KoiNetworkConfig.create()` 和 `KoiNetworkConfig.production()` 默认会验证
+SSL 证书。开发和测试配置仍默认关闭证书校验，便于连接本地或自签名服务。
+
+如果迁移项目需要临时保留旧的非安全行为，请显式传参：
+
+```dart
+await KoiNetworkInitializer.initialize(
+  baseUrl: 'https://api.example.com',
+  environment: 'production',
+  validateCertificate: false,
+);
+```
+
 JWT 认证适配器示例：
 
 ```dart

@@ -1,7 +1,6 @@
-import 'package:test/test.dart';
-import 'package:mocktail/mocktail.dart';
-import 'package:dio/dio.dart';
 import 'package:koi_network/koi_network.dart';
+import 'package:mocktail/mocktail.dart';
+import 'package:test/test.dart';
 
 // Mock 类
 class MockAuthAdapter extends Mock implements KoiAuthAdapter {}
@@ -38,10 +37,34 @@ void main() {
     );
 
     // 设置 Mock 行为
-    when(() => mockLoggerAdapter.debug(any(), any(), any())).thenReturn(null);
-    when(() => mockLoggerAdapter.info(any(), any(), any())).thenReturn(null);
-    when(() => mockLoggerAdapter.warning(any(), any(), any())).thenReturn(null);
-    when(() => mockLoggerAdapter.error(any(), any(), any())).thenReturn(null);
+    when(
+      () => mockLoggerAdapter.debug(
+        any<String>(),
+        any<dynamic>(),
+        any<StackTrace?>(),
+      ),
+    ).thenReturn(null);
+    when(
+      () => mockLoggerAdapter.info(
+        any<String>(),
+        any<dynamic>(),
+        any<StackTrace?>(),
+      ),
+    ).thenReturn(null);
+    when(
+      () => mockLoggerAdapter.warning(
+        any<String>(),
+        any<dynamic>(),
+        any<StackTrace?>(),
+      ),
+    ).thenReturn(null);
+    when(
+      () => mockLoggerAdapter.error(
+        any<String>(),
+        any<dynamic>(),
+        any<StackTrace?>(),
+      ),
+    ).thenReturn(null);
     when(() => mockPlatformAdapter.platform).thenReturn('test');
     when(
       () => mockPlatformAdapter.platformDisplayName,
@@ -72,7 +95,7 @@ void main() {
       expect(config.validateCertificate, false);
     });
 
-    test('生产环境允许关闭 SSL 证书验证（按项目要求）', () {
+    test('生产环境默认开启 SSL 证书验证', () {
       // Arrange
       final config = KoiNetworkConfig.production(
         baseUrl: 'https://api.example.com',
@@ -84,24 +107,21 @@ void main() {
       // Assert
       expect(dio, isNotNull);
       expect(dio.options.baseUrl, 'https://api.example.com');
-      expect(
-        config.validateCertificate,
-        false,
-        reason: '当前项目要求生产环境关闭 SSL 证书验证',
-      );
+      expect(config.validateCertificate, true, reason: '生产环境默认应启用 SSL 证书验证');
     });
 
-    test('生产环境配置默认关闭 SSL 验证（按项目要求）', () {
+    test('生产环境允许显式关闭 SSL 证书验证', () {
       // Arrange
       final config = KoiNetworkConfig.production(
         baseUrl: 'https://api.example.com',
+        validateCertificate: false,
       );
 
       // Act & Assert
       expect(
         config.validateCertificate,
         false,
-        reason: '当前项目要求生产环境默认关闭 SSL 证书验证',
+        reason: '迁移项目可显式保留关闭 SSL 证书验证的旧行为',
       );
 
       // 注意：isProduction 是基于运行时环境变量 dart.vm.product，

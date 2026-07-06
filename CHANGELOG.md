@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.0.4] - 2026-07-06
+
+### Changed
+- Enable SSL certificate validation by default for `KoiNetworkConfig.create()`
+  and `KoiNetworkConfig.production()`.
+- Keep development and testing configurations opt-out by default for local and
+  self-signed services.
+
+### Added
+- Add explicit `validateCertificate` overrides to `KoiNetworkConfig.production`,
+  `KoiNetworkConfig.development`, `KoiNetworkConfig.testing`, and
+  `KoiNetworkInitializer.initialize` / `reinitialize`.
+
 ## [0.0.3] - 2026-07-06
 
 ### Added

@@ -67,9 +67,10 @@ class KoiNetworkConfig {
       enableRetry: enableRetry ?? true,
       maxRetries: maxRetries ?? 3,
       retryDelay: retryDelay ?? const Duration(seconds: 1),
-      // 注意：当前项目默认关闭证书校验（生产环境亦然）。
-      // 如需开启严格证书校验，请在创建配置时显式传入 validateCertificate: true。
-      validateCertificate: validateCertificate ?? false,
+      // 默认启用证书校验；开发/测试工厂会显式关闭以便连接本地或自签名服务。
+      // Certificate validation is enabled by default; development/testing
+      // factories explicitly disable it for local or self-signed services.
+      validateCertificate: validateCertificate ?? true,
       maxConnectionsPerHost: maxConnectionsPerHost ?? 12,
       defaultHeaders: {'Accept': 'application/json'},
       customHeaders: customHeaders ?? {},
@@ -90,6 +91,7 @@ class KoiNetworkConfig {
     Map<String, String>? customHeaders,
     List<String>? tokenRefreshWhiteList,
     bool enableLogging = false,
+    bool? validateCertificate,
     bool? enableProactiveTokenRefresh,
     List<KoiHeaderBuilder>? headerBuilders,
   }) {
@@ -99,7 +101,7 @@ class KoiNetworkConfig {
       receiveTimeout: const Duration(seconds: 10),
       sendTimeout: const Duration(seconds: 5),
       enableLogging: enableLogging,
-      validateCertificate: false,
+      validateCertificate: validateCertificate ?? false,
       enableRetry: true,
       maxRetries: 1,
       retryDelay: const Duration(milliseconds: 100),
@@ -118,6 +120,7 @@ class KoiNetworkConfig {
     Map<String, String>? customHeaders,
     List<String>? tokenRefreshWhiteList,
     bool enableLogging = false,
+    bool? validateCertificate,
     bool? enableProactiveTokenRefresh,
     List<KoiHeaderBuilder>? headerBuilders,
   }) {
@@ -129,7 +132,7 @@ class KoiNetworkConfig {
     return KoiNetworkConfig.create(
       baseUrl: baseUrl,
       enableLogging: enableLogging,
-      validateCertificate: false,
+      validateCertificate: validateCertificate ?? true,
       enableRetry: true,
       maxRetries: 1,
       enableCache: false,
@@ -147,6 +150,7 @@ class KoiNetworkConfig {
     Map<String, String>? customHeaders,
     List<String>? tokenRefreshWhiteList,
     bool enableLogging = false,
+    bool? validateCertificate,
     bool? enableProactiveTokenRefresh,
     List<KoiHeaderBuilder>? headerBuilders,
   }) {
@@ -156,7 +160,7 @@ class KoiNetworkConfig {
       receiveTimeout: const Duration(seconds: 20),
       sendTimeout: const Duration(seconds: 10),
       enableLogging: enableLogging,
-      validateCertificate: false,
+      validateCertificate: validateCertificate ?? false,
       enableRetry: true,
       maxRetries: 1,
       retryDelay: const Duration(milliseconds: 500),

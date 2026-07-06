@@ -1,7 +1,6 @@
-import 'package:test/test.dart';
-import 'package:mocktail/mocktail.dart';
-import 'package:dio/dio.dart';
 import 'package:koi_network/koi_network.dart';
+import 'package:mocktail/mocktail.dart';
+import 'package:test/test.dart';
 
 // Mock 类
 class MockAuthAdapter extends Mock implements KoiAuthAdapter {}
@@ -29,9 +28,11 @@ void main() {
     mockPlatform = MockPlatformAdapter();
 
     // Mock logger 方法
-    when(() => mockLogger.info(any())).thenReturn(null);
-    when(() => mockLogger.error(any(), any(), any())).thenReturn(null);
-    when(() => mockLogger.warning(any())).thenReturn(null);
+    when(() => mockLogger.info(any<String>())).thenReturn(null);
+    when(
+      () => mockLogger.error(any<String>(), any<dynamic>(), any<StackTrace?>()),
+    ).thenReturn(null);
+    when(() => mockLogger.warning(any<String>())).thenReturn(null);
 
     // 注册适配器
     KoiNetworkAdapters.register(
@@ -105,6 +106,18 @@ void main() {
       await KoiNetworkInitializer.initialize(
         baseUrl: 'https://api.example.com',
         environment: 'production',
+      );
+      expect(
+        KoiNetworkServiceManager.instance.config!.validateCertificate,
+        true,
+      );
+      KoiNetworkInitializer.dispose();
+
+      // Test explicit insecure production override
+      await KoiNetworkInitializer.initialize(
+        baseUrl: 'https://api.example.com',
+        environment: 'production',
+        validateCertificate: false,
       );
       expect(
         KoiNetworkServiceManager.instance.config!.validateCertificate,
@@ -191,6 +204,7 @@ void main() {
       await KoiNetworkInitializer.reinitialize(
         baseUrl: 'https://new.example.com',
         environment: 'production',
+        validateCertificate: false,
       );
 
       // Assert

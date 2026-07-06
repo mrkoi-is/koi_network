@@ -101,6 +101,23 @@ await KoiNetworkInitializer.initialize(
 In real projects, you usually replace the default adapters with application
 implementations.
 
+### TLS Defaults
+
+`KoiNetworkConfig.create()` and `KoiNetworkConfig.production()` validate SSL
+certificates by default. Development and testing configs keep certificate
+validation disabled for local or self-signed services.
+
+If a migration must temporarily keep the old insecure behavior, opt in
+explicitly:
+
+```dart
+await KoiNetworkInitializer.initialize(
+  baseUrl: 'https://api.example.com',
+  environment: 'production',
+  validateCertificate: false,
+);
+```
+
 Example auth adapter with JWT support:
 
 ```dart

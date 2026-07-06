@@ -26,6 +26,7 @@ class KoiNetworkInitializer {
   /// - [customHeaders] 自定义请求头 / Custom request headers
   /// - [tokenRefreshWhiteList] token 刷新白名单 URL 列表 / URL whitelist for token refresh checks
   /// - [enableLogging] 是否启用网络日志 / Whether to enable network logging
+  /// - [validateCertificate] 是否验证 SSL 证书 / Whether SSL certificates are validated
   /// - [key] 模块标识符，用于区分不同模块实例 / Module key used to distinguish different network instances
   ///
   /// ### Key 约定 / Key Conventions
@@ -64,6 +65,7 @@ class KoiNetworkInitializer {
     Map<String, String>? customHeaders,
     List<String>? tokenRefreshWhiteList,
     bool enableLogging = false,
+    bool? validateCertificate,
     bool enableProactiveTokenRefresh = true,
     String key = 'main',
     List<KoiHeaderBuilder>? headerBuilders,
@@ -85,6 +87,7 @@ class KoiNetworkInitializer {
         customHeaders: customHeaders,
         tokenRefreshWhiteList: tokenRefreshWhiteList,
         enableLogging: enableLogging,
+        validateCertificate: validateCertificate,
         enableProactiveTokenRefresh: enableProactiveTokenRefresh,
         headerBuilders: headerBuilders,
       );
@@ -152,6 +155,7 @@ class KoiNetworkInitializer {
     Map<String, String>? customHeaders,
     List<String>? tokenRefreshWhiteList,
     bool enableLogging = false,
+    bool? validateCertificate,
     bool enableProactiveTokenRefresh = true,
     List<KoiHeaderBuilder>? headerBuilders,
   }) {
@@ -162,6 +166,7 @@ class KoiNetworkInitializer {
           baseUrl: baseUrl,
           customHeaders: customHeaders,
           tokenRefreshWhiteList: tokenRefreshWhiteList,
+          validateCertificate: validateCertificate,
           enableProactiveTokenRefresh: enableProactiveTokenRefresh,
           headerBuilders: headerBuilders,
         );
@@ -173,6 +178,7 @@ class KoiNetworkInitializer {
           customHeaders: customHeaders,
           tokenRefreshWhiteList: tokenRefreshWhiteList,
           enableLogging: enableLogging,
+          validateCertificate: validateCertificate,
           enableProactiveTokenRefresh: enableProactiveTokenRefresh,
           headerBuilders: headerBuilders,
         );
@@ -185,6 +191,7 @@ class KoiNetworkInitializer {
           customHeaders: customHeaders,
           tokenRefreshWhiteList: tokenRefreshWhiteList,
           enableLogging: enableLogging,
+          validateCertificate: validateCertificate,
           enableProactiveTokenRefresh: enableProactiveTokenRefresh,
           headerBuilders: headerBuilders,
         );
@@ -225,6 +232,7 @@ class KoiNetworkInitializer {
     String environment = 'development',
     Map<String, String>? customHeaders,
     bool enableLogging = false,
+    bool? validateCertificate,
     List<String>? tokenRefreshWhiteList,
     String key = 'main',
     List<KoiHeaderBuilder>? headerBuilders,
@@ -236,6 +244,7 @@ class KoiNetworkInitializer {
 
       tokenRefreshWhiteList: tokenRefreshWhiteList,
       enableLogging: enableLogging,
+      validateCertificate: validateCertificate,
       headerBuilders: headerBuilders,
     );
 
