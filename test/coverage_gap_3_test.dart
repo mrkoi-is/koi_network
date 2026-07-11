@@ -104,6 +104,10 @@ void _registerAdapters({
     requestEncoder: requestEncoder,
   );
 
+  if (a is MockAuthAdapter) {
+    when(() => a.isLoggedIn()).thenReturn(true);
+  }
+
   when(() => lg.debug(any(), any(), any())).thenReturn(null);
   when(() => lg.info(any(), any(), any())).thenReturn(null);
   when(() => lg.warning(any(), any(), any())).thenReturn(null);
@@ -176,10 +180,10 @@ void main() {
   });
 
   // ═══════════════════════════════════════════════════════════════════
-  // DioFactory encoding interceptor (lines 162-168, 171)
+  // DioFactory encoding interceptor
   // ═══════════════════════════════════════════════════════════════════
   group('DioFactory encoding interceptor', () {
-    test('encoding interceptor 编码 null data 和 Map data', () async {
+    test('encoding interceptor 仅编码 Map data', () async {
       final mockEncoder = MockRequestEncoder();
       when(() => mockEncoder.encode(any())).thenReturn({'encoded': true});
 
@@ -202,17 +206,6 @@ void main() {
       }
       expect(encodingInterceptor, isNotNull);
 
-      // 测试 null data
-      final opts1 = RequestOptions(path: '/test');
-      opts1.data = null;
-      final completer1 = Completer<void>();
-      final handler1 = _FakeRequestHandler(
-        onNext: (_) => completer1.complete(),
-      );
-      encodingInterceptor!.onRequest(opts1, handler1);
-      await completer1.future;
-      verify(() => mockEncoder.encode(any())).called(1);
-
       // 测试 Map data
       final opts2 = RequestOptions(path: '/test');
       opts2.data = <String, dynamic>{'key': 'value'};
@@ -220,9 +213,10 @@ void main() {
       final handler2 = _FakeRequestHandler(
         onNext: (_) => completer2.complete(),
       );
-      encodingInterceptor.onRequest(opts2, handler2);
+      encodingInterceptor!.onRequest(opts2, handler2);
       await completer2.future;
       verify(() => mockEncoder.encode(any())).called(1);
+      expect(opts2.data, <String, dynamic>{'encoded': true});
     });
   });
 

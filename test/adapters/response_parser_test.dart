@@ -91,6 +91,10 @@ void main() {
         expect(parser.isAuthError(403, null), isTrue);
       });
 
+      test('should keep HTTP 402 out of the default auth error codes', () {
+        expect(parser.isAuthError(402, null), isFalse);
+      });
+
       test('should return false for HTTP 200', () {
         expect(parser.isAuthError(200, null), isFalse);
       });
@@ -113,10 +117,11 @@ void main() {
 
       test('should respect custom auth error codes', () {
         final customParser = KoiDefaultResponseParser(
-          authErrorHttpCodes: [401],
+          authErrorHttpCodes: [401, 402, 403],
         );
         expect(customParser.isAuthError(401, null), isTrue);
-        expect(customParser.isAuthError(403, null), isFalse);
+        expect(customParser.isAuthError(402, null), isTrue);
+        expect(customParser.isAuthError(403, null), isTrue);
       });
     });
   });

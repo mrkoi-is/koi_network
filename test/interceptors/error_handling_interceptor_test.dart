@@ -23,6 +23,7 @@ class FakeResponse extends Fake implements Response {}
 class FakeDioException extends Fake implements DioException {}
 
 void main() {
+  late MockAuthAdapter mockAuthAdapter;
   late MockErrorHandlerAdapter mockErrorHandler;
   late MockErrorInterceptorHandler mockHandler;
 
@@ -32,12 +33,14 @@ void main() {
   });
 
   setUp(() {
+    mockAuthAdapter = MockAuthAdapter();
     mockErrorHandler = MockErrorHandlerAdapter();
     mockHandler = MockErrorInterceptorHandler();
+    when(() => mockAuthAdapter.isLoggedIn()).thenReturn(true);
 
     // 注册全局适配器
     KoiNetworkAdapters.register(
-      authAdapter: MockAuthAdapter(),
+      authAdapter: mockAuthAdapter,
       errorHandlerAdapter: mockErrorHandler,
       loadingAdapter: MockLoadingAdapter(),
       loggerAdapter: MockLoggerAdapter(),
@@ -109,5 +112,63 @@ void main() {
         verify(() => mockHandler.next(dioError)).called(1);
       });
     });
+
+    test('Should not globally handle a 401 when not logged in', () async {
+      // Arrange
+      final interceptor = KoiErrorHandlingInterceptor(
+        KoiNetworkConfig.create(),
+      );
+      final dioError = DioException(
+        requestOptions: RequestOptions(path: '/public'),
+        type: DioExceptionType.badResponse,
+        response: Response(
+          requestOptions: RequestOptions(path: '/public'),
+          statusCode: 401,
+        ),
+      );
+      when(() => mockAuthAdapter.isLoggedIn()).thenReturn(false);
+
+      // Act
+      await interceptor.onError(dioError, mockHandler);
+
+      // Assert
+      verifyNever(
+        () => mockErrorHandler.handleAuthError(
+          statusCode: any(named: 'statusCode'),
+          message: any(named: 'message'),
+        ),
+      );
+      verify(() => mockHandler.next(dioError)).called(1);
+    });
+
+    test(
+      'Should not globally handle a 401 from a configured public path',
+      () async {
+        // Arrange
+        final interceptor = KoiErrorHandlingInterceptor(
+          KoiNetworkConfig.create(tokenRefreshWhiteList: const ['/auth/login']),
+        );
+        final dioError = DioException(
+          requestOptions: RequestOptions(path: '/auth/login'),
+          type: DioExceptionType.badResponse,
+          response: Response(
+            requestOptions: RequestOptions(path: '/auth/login'),
+            statusCode: 401,
+          ),
+        );
+
+        // Act
+        await interceptor.onError(dioError, mockHandler);
+
+        // Assert
+        verifyNever(
+          () => mockErrorHandler.handleAuthError(
+            statusCode: any(named: 'statusCode'),
+            message: any(named: 'message'),
+          ),
+        );
+        verify(() => mockHandler.next(dioError)).called(1);
+      },
+    );
   });
 }

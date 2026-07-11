@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:koi_network/koi_network.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:test/test.dart';
@@ -12,6 +14,31 @@ class MockLoadingAdapter extends Mock implements KoiLoadingAdapter {}
 class MockLoggerAdapter extends Mock implements KoiLoggerAdapter {}
 
 class MockPlatformAdapter extends Mock implements KoiPlatformAdapter {}
+
+class MockRequestEncoder extends Mock implements KoiRequestEncoder {}
+
+class _CapturingHttpClientAdapter implements HttpClientAdapter {
+  final requestData = <Object?>[];
+
+  @override
+  Future<ResponseBody> fetch(
+    RequestOptions options,
+    Stream<Uint8List>? requestStream,
+    Future<void>? cancelFuture,
+  ) async {
+    requestData.add(options.data);
+    return ResponseBody.fromString(
+      '{"code": 200, "data": null}',
+      200,
+      headers: {
+        Headers.contentTypeHeader: [Headers.jsonContentType],
+      },
+    );
+  }
+
+  @override
+  void close({bool force = false}) {}
+}
 
 void main() {
   late MockAuthAdapter mockAuthAdapter;
@@ -72,6 +99,9 @@ void main() {
     when(
       () => mockPlatformAdapter.getPlatformConfig(),
     ).thenReturn({'platform': 'test', 'version': '1.0.0'});
+    when(() => mockPlatformAdapter.appVersion).thenReturn('1.0.0');
+    when(() => mockPlatformAdapter.userAgent).thenReturn('KoiNetworkTest/1.0');
+    when(() => mockAuthAdapter.getToken()).thenReturn(null);
   });
 
   tearDown(() {
@@ -180,6 +210,41 @@ void main() {
       // Assert
       expect(dioWithoutSSL, isNotNull);
       expect(configWithoutSSL.validateCertificate, false);
+    });
+  });
+
+  group('DioFactory 请求体编码', () {
+    test('保留 GET 和空 POST 的 null 请求体', () async {
+      final requestEncoder = MockRequestEncoder();
+      final transport = _CapturingHttpClientAdapter();
+      when(
+        () => requestEncoder.encode(any()),
+      ).thenReturn(<String, dynamic>{'encoded': true});
+      KoiNetworkAdapters.register(
+        authAdapter: mockAuthAdapter,
+        errorHandlerAdapter: mockErrorHandlerAdapter,
+        loadingAdapter: mockLoadingAdapter,
+        loggerAdapter: mockLoggerAdapter,
+        platformAdapter: mockPlatformAdapter,
+        requestEncoder: requestEncoder,
+      );
+
+      final dio = KoiDioFactory.createMainDio(
+        KoiNetworkConfig.create(
+          baseUrl: 'https://api.example.com',
+          enableCache: false,
+          enableRetry: false,
+          enableProactiveTokenRefresh: false,
+        ),
+        key: 'preserve_null_request_body',
+      )..httpClientAdapter = transport;
+
+      await dio.get<void>('/profile');
+      await dio.post<void>('/logout');
+
+      expect(transport.requestData, hasLength(2));
+      expect(transport.requestData, everyElement(isNull));
+      verifyNever(() => requestEncoder.encode(any()));
     });
   });
 }

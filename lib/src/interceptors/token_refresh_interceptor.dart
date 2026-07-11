@@ -57,9 +57,7 @@ class KoiTokenRefreshInterceptor extends Interceptor {
   ) async {
     // 检查是否在白名单中或被标记为跳过
     // Check if it is in the whitelist or marked to be skipped
-    final path = options.path;
-    if (options.extra[_kSkipTokenRefreshKey] == true ||
-        whiteList.any(path.contains)) {
+    if (_shouldSkipTokenRefresh(options)) {
       handler.next(options);
       return;
     }
@@ -119,8 +117,7 @@ class KoiTokenRefreshInterceptor extends Interceptor {
     DioException err,
     ErrorInterceptorHandler handler,
   ) async {
-    if (err.requestOptions.extra[_kSkipTokenRefreshKey] == true ||
-        !_isAuthError(err)) {
+    if (_shouldSkipTokenRefresh(err.requestOptions) || !_isAuthError(err)) {
       handler.next(err);
       return;
     }
@@ -295,6 +292,16 @@ class KoiTokenRefreshInterceptor extends Interceptor {
   /// 处理认证失败。
   /// Handles authentication failure.
   Future<void> _handleAuthFailure() async {
+    // 未登录请求的 401 不应触发全局登出或跳转登录页。
+    // A 401 from an unauthenticated request must not trigger global logout
+    // or navigation to the login page.
+    if (!KoiNetworkAdapters.auth.isLoggedIn()) {
+      KoiNetworkAdapters.logger.debug(
+        '⏭️ [TokenRefresh] Not logged in, skip global auth failure handling',
+      );
+      return;
+    }
+
     try {
       await KoiNetworkAdapters.errorHandler.handleAuthError(
         statusCode: 401,
@@ -319,5 +326,10 @@ class KoiTokenRefreshInterceptor extends Interceptor {
 
   bool _isNonReplayableBody(dynamic data) {
     return data is Stream || data is FormData || data is MultipartFile;
+  }
+
+  bool _shouldSkipTokenRefresh(RequestOptions options) {
+    return options.extra[_kSkipTokenRefreshKey] == true ||
+        whiteList.any(options.path.contains);
   }
 }

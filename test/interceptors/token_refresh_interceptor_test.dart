@@ -83,6 +83,7 @@ void main() {
       when(() => mockLogger.info(any(), any(), any())).thenReturn(null);
       when(() => mockLogger.warning(any(), any(), any())).thenReturn(null);
       when(() => mockLogger.error(any(), any(), any())).thenReturn(null);
+      when(() => mockAuthAdapter.isLoggedIn()).thenReturn(true);
     });
 
     tearDown(() {
@@ -262,6 +263,62 @@ void main() {
 
         // Assert
         verifyNever(() => mockAuthAdapter.refresh());
+        verify(() => handler.next(error)).called(1);
+      });
+
+      test('未登录收到401时不应触发全局认证失败处理', () async {
+        // Arrange
+        final options = RequestOptions(path: '/api/public');
+        final error = DioException(
+          requestOptions: options,
+          response: Response(requestOptions: options, statusCode: 401),
+        );
+        final handler = MockErrorInterceptorHandler();
+
+        when(() => mockAuthAdapter.isTokenExpired()).thenReturn(false);
+        when(() => mockAuthAdapter.refresh()).thenAnswer((_) async => false);
+        when(() => mockAuthAdapter.isLoggedIn()).thenReturn(false);
+        when(() => handler.reject(any())).thenReturn(null);
+
+        // Act
+        await interceptor.onError(error, handler);
+
+        // Assert
+        verify(() => mockAuthAdapter.refresh()).called(1);
+        verifyNever(
+          () => mockErrorHandler.handleAuthError(
+            statusCode: any(named: 'statusCode'),
+            message: any(named: 'message'),
+          ),
+        );
+        verify(() => handler.reject(error)).called(1);
+      });
+
+      test('白名单路径收到401时跳过刷新和全局认证失败处理', () async {
+        // Arrange
+        final whiteListInterceptor = KoiTokenRefreshInterceptor(
+          mockDio,
+          whiteList: const ['/auth/login'],
+        );
+        final options = RequestOptions(path: '/auth/login');
+        final error = DioException(
+          requestOptions: options,
+          response: Response(requestOptions: options, statusCode: 401),
+        );
+        final handler = MockErrorInterceptorHandler();
+        when(() => handler.next(any())).thenReturn(null);
+
+        // Act
+        await whiteListInterceptor.onError(error, handler);
+
+        // Assert
+        verifyNever(() => mockAuthAdapter.refresh());
+        verifyNever(
+          () => mockErrorHandler.handleAuthError(
+            statusCode: any(named: 'statusCode'),
+            message: any(named: 'message'),
+          ),
+        );
         verify(() => handler.next(error)).called(1);
       });
 

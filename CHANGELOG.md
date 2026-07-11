@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.0.5] - 2026-07-11
+
+### Fixed
+- Preserve `null` request bodies for body-less GET and POST requests instead
+  of encoding them as an empty JSON object.
+- Do not invoke global authentication-failure handling for unauthenticated or
+  configured public endpoints that return an authentication status.
+
+### Changed
+- Apply `tokenRefreshWhiteList` consistently to token refresh and global
+  authentication-failure handling.
+
+### Documentation
+- Clarify that projects can opt into HTTP 402 authentication handling through
+  a custom response parser or `authErrorHttpCodes`, while the default remains
+  401 and 403.
+
 ## [0.0.4] - 2026-07-06
 
 ### Changed

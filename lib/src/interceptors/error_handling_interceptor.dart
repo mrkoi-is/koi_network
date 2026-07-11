@@ -74,6 +74,13 @@ class KoiErrorHandlingInterceptor extends Interceptor {
   /// Attempts to handle authentication-related errors.
   Future<void> _tryHandleAuthError(DioException err) async {
     try {
+      // 与 Token 刷新白名单保持一致：公开接口的 401 不应导致全局登出。
+      // Keep this aligned with the token-refresh whitelist: a 401 from a
+      // public endpoint must not result in global logout.
+      if (config.tokenRefreshWhiteList.any(err.requestOptions.path.contains)) {
+        return;
+      }
+
       final parser = KoiNetworkAdapters.responseParser;
       final responseBody = err.response?.data;
 
@@ -82,13 +89,13 @@ class KoiErrorHandlingInterceptor extends Interceptor {
       final body = responseBody is Map<String, dynamic> ? responseBody : null;
       final isAuth = parser.isAuthError(err.response?.statusCode, body);
 
-      if (isAuth) {
-        final message = _extractErrorMessage(err);
-        await KoiNetworkAdapters.errorHandler.handleAuthError(
-          statusCode: err.response?.statusCode,
-          message: message,
-        );
-      }
+      if (!isAuth || !KoiNetworkAdapters.auth.isLoggedIn()) return;
+
+      final message = _extractErrorMessage(err);
+      await KoiNetworkAdapters.errorHandler.handleAuthError(
+        statusCode: err.response?.statusCode,
+        message: message,
+      );
     } catch (e) {
       if (KoiNetworkConstants.debugEnabled) {
         KoiNetworkAdapters.logger.error(

@@ -187,15 +187,13 @@ class KoiDioFactory {
     dio.interceptors.add(
       InterceptorsWrapper(
         onRequest: (options, handler) {
-          // 将 null 或 Map data 通过注册的编码器编码
-          // 确保即使无 body 的 POST 请求也能注入 token
-          // Encode null or Map data through the registered encoder
-          // Ensures tokens can be injected even on POST requests without a body
+          // 仅将实际的 Map data 通过注册的编码器编码。
+          // 保留 null，避免为无请求体的 GET/POST 意外生成 `{}`。
+          // Only encode actual Map data through the registered encoder.
+          // Keep null intact so body-less GET/POST requests do not gain `{}`.
           final data = options.data;
-          if (data == null || data is Map<String, dynamic>) {
-            options.data = KoiNetworkAdapters.requestEncoder.encode(
-              (data as Map<String, dynamic>?) ?? <String, dynamic>{},
-            );
+          if (data is Map<String, dynamic>) {
+            options.data = KoiNetworkAdapters.requestEncoder.encode(data);
           }
           handler.next(options);
         },

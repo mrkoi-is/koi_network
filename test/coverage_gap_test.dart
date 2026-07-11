@@ -97,6 +97,10 @@ void _registerAdapters({
     requestEncoder: requestEncoder,
   );
 
+  if (a is MockAuthAdapter) {
+    when(() => a.isLoggedIn()).thenReturn(true);
+  }
+
   // 设置通用 stub
   when(() => lg.debug(any(), any(), any())).thenReturn(null);
   when(() => lg.info(any(), any(), any())).thenReturn(null);

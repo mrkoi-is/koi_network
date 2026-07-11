@@ -236,8 +236,12 @@ class KoiNetworkConfig {
   /// Lead time before token refresh, defaulting to 5 minutes.
   final Duration tokenRefreshThreshold;
 
-  /// Token 刷新拦截器白名单。
-  /// Whitelist for token refresh interception.
+  /// 认证白名单。
+  ///
+  /// 匹配的请求会跳过 token 刷新和全局认证失败处理，适用于登录、验证码等公开接口。
+  /// Matching requests skip token refresh and global authentication-failure
+  /// handling, making this suitable for public endpoints such as login and
+  /// verification-code APIs.
   final List<String> tokenRefreshWhiteList;
 
   /// Header 构建器列表。
