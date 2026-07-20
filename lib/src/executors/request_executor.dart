@@ -1,4 +1,6 @@
 import 'package:dio/dio.dart';
+import 'package:json_annotation/json_annotation.dart'
+    show CheckedFromJsonException;
 import 'package:koi_network/src/adapters/network_adapters.dart';
 import 'package:koi_network/src/koi_network_constants.dart'
     show KoiNetworkConstants;
@@ -132,7 +134,7 @@ class KoiRequestExecutor {
       if (responseData is Map<String, dynamic>) {
         if (parser.isAuthError(response.statusCode, responseData)) {
           throw RequestLogicException<T>(
-            'Authentication error',
+            '认证失败',
             errorCode: response.statusCode,
           );
         }
@@ -167,7 +169,7 @@ class KoiRequestExecutor {
               ? parser.getCode(responseData)
               : response.statusCode;
           throw RequestLogicException<T>(
-            'Operation failed',
+            '操作失败，请重试',
             data: data,
             errorCode: code,
           );
@@ -182,7 +184,7 @@ class KoiRequestExecutor {
               ? parser.getCode(responseData)
               : response.statusCode;
           throw RequestLogicException<T>(
-            'Invalid data format',
+            '数据格式异常，请重试',
             data: data,
             errorCode: code,
           );
@@ -198,11 +200,7 @@ class KoiRequestExecutor {
           final code = responseData is Map<String, dynamic>
               ? parser.getCode(responseData)
               : response.statusCode;
-          throw RequestLogicException<T>(
-            'No data available',
-            data: data,
-            errorCode: code,
-          );
+          throw RequestLogicException<T>('暂无相关数据', data: data, errorCode: code);
         }
 
         opts.onSuccess?.call(data);
@@ -217,7 +215,7 @@ class KoiRequestExecutor {
             ? parser.getCode(responseData)
             : response.statusCode;
         throw RequestLogicException<T>(
-          msg ?? 'Operation failed',
+          msg ?? '操作失败，请重试',
           data: data,
           errorCode: code,
         );
@@ -318,7 +316,7 @@ class KoiRequestExecutor {
       // Show loading prompt
       if (opts.showLoading) {
         KoiNetworkAdapters.loading.showLoading(
-          message: opts.loadingText ?? 'Loading...',
+          message: opts.loadingText ?? '加载中...',
         );
       }
 
@@ -417,7 +415,7 @@ class KoiRequestExecutor {
               ? parser.getCode(responseData)
               : response.statusCode;
           throw RequestLogicException<T>(
-            msg ?? 'Request failed',
+            msg ?? '请求失败',
             data: data,
             errorCode: code,
           );
@@ -509,6 +507,18 @@ class KoiRequestExecutor {
 
     if (e is DioException) {
       return KoiNetworkAdapters.errorHandler.formatErrorMessage(e);
+    }
+
+    if (e is CheckedFromJsonException) {
+      var current = e;
+      while (current.innerError is CheckedFromJsonException) {
+        current = current.innerError! as CheckedFromJsonException;
+      }
+
+      final className = current.className ?? '未知类型';
+      final key = current.key ?? '未知字段';
+      final reason = current.innerError ?? current.message ?? '未知原因';
+      return '解析失败: $className.$key (原因: $reason)';
     }
 
     return e.toString();

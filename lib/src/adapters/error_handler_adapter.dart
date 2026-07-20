@@ -83,21 +83,23 @@ class KoiDefaultErrorHandlerAdapter implements KoiErrorHandlerAdapter {
   String formatErrorMessage(DioException error) {
     switch (error.type) {
       case DioExceptionType.connectionTimeout:
-        return 'Connection timeout';
+        return '连接超时，请检查网络';
       case DioExceptionType.sendTimeout:
-        return 'Send timeout';
+        return '发送超时，请检查网络';
       case DioExceptionType.receiveTimeout:
-        return 'Receive timeout';
+        return '接收超时，请检查网络';
       case DioExceptionType.badResponse:
-        return 'Server error: ${error.response?.statusCode}';
+        return '服务器响应错误: ${error.response?.statusCode ?? '未知'}';
       case DioExceptionType.cancel:
-        return 'Request cancelled';
+        return '请求已取消';
       case DioExceptionType.connectionError:
-        return 'Connection failed';
+        return '网络连接失败，请检查网络';
+      case DioExceptionType.badCertificate:
+        return 'SSL 证书验证失败，请检查网络配置';
       case DioExceptionType.unknown:
-        return 'Unknown error: ${error.message}';
+        return '未知错误: ${error.message ?? '无详细信息'}';
       default:
-        return 'Network request failed';
+        return '网络请求失败';
     }
   }
 }

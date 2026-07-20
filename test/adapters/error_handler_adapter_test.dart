@@ -16,7 +16,7 @@ void main() {
           type: DioExceptionType.connectionTimeout,
           requestOptions: RequestOptions(),
         );
-        expect(adapter.formatErrorMessage(error), 'Connection timeout');
+        expect(adapter.formatErrorMessage(error), '连接超时，请检查网络');
       });
 
       test('should format sendTimeout', () {
@@ -24,7 +24,7 @@ void main() {
           type: DioExceptionType.sendTimeout,
           requestOptions: RequestOptions(),
         );
-        expect(adapter.formatErrorMessage(error), 'Send timeout');
+        expect(adapter.formatErrorMessage(error), '发送超时，请检查网络');
       });
 
       test('should format receiveTimeout', () {
@@ -32,7 +32,7 @@ void main() {
           type: DioExceptionType.receiveTimeout,
           requestOptions: RequestOptions(),
         );
-        expect(adapter.formatErrorMessage(error), 'Receive timeout');
+        expect(adapter.formatErrorMessage(error), '接收超时，请检查网络');
       });
 
       test('should format badResponse with status code', () {
@@ -41,7 +41,7 @@ void main() {
           requestOptions: RequestOptions(),
           response: Response(requestOptions: RequestOptions(), statusCode: 404),
         );
-        expect(adapter.formatErrorMessage(error), 'Server error: 404');
+        expect(adapter.formatErrorMessage(error), '服务器响应错误: 404');
       });
 
       test('should format cancel', () {
@@ -49,7 +49,7 @@ void main() {
           type: DioExceptionType.cancel,
           requestOptions: RequestOptions(),
         );
-        expect(adapter.formatErrorMessage(error), 'Request cancelled');
+        expect(adapter.formatErrorMessage(error), '请求已取消');
       });
 
       test('should format connectionError', () {
@@ -57,7 +57,15 @@ void main() {
           type: DioExceptionType.connectionError,
           requestOptions: RequestOptions(),
         );
-        expect(adapter.formatErrorMessage(error), 'Connection failed');
+        expect(adapter.formatErrorMessage(error), '网络连接失败，请检查网络');
+      });
+
+      test('should format badCertificate', () {
+        final error = DioException(
+          type: DioExceptionType.badCertificate,
+          requestOptions: RequestOptions(),
+        );
+        expect(adapter.formatErrorMessage(error), 'SSL 证书验证失败，请检查网络配置');
       });
 
       test('should format unknown error', () {
@@ -66,10 +74,7 @@ void main() {
           requestOptions: RequestOptions(),
           message: 'Something went wrong',
         );
-        expect(
-          adapter.formatErrorMessage(error),
-          'Unknown error: Something went wrong',
-        );
+        expect(adapter.formatErrorMessage(error), '未知错误: Something went wrong');
       });
     });
 

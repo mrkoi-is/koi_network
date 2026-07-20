@@ -370,14 +370,14 @@ void main() {
 
     test('formatErrorMessage 各种 DioExceptionType', () {
       final types = {
-        DioExceptionType.connectionTimeout: 'Connection timeout',
-        DioExceptionType.sendTimeout: 'Send timeout',
-        DioExceptionType.receiveTimeout: 'Receive timeout',
-        DioExceptionType.badResponse: 'Server error',
-        DioExceptionType.cancel: 'Request cancelled',
-        DioExceptionType.connectionError: 'Connection failed',
-        DioExceptionType.unknown: 'Unknown error',
-        DioExceptionType.badCertificate: 'Network request failed',
+        DioExceptionType.connectionTimeout: '连接超时',
+        DioExceptionType.sendTimeout: '发送超时',
+        DioExceptionType.receiveTimeout: '接收超时',
+        DioExceptionType.badResponse: '服务器响应错误',
+        DioExceptionType.cancel: '请求已取消',
+        DioExceptionType.connectionError: '网络连接失败',
+        DioExceptionType.unknown: '未知错误',
+        DioExceptionType.badCertificate: 'SSL 证书验证失败',
       };
 
       for (final entry in types.entries) {
@@ -621,7 +621,7 @@ void main() {
       verify(
         () => mockErrorHandler.handleAuthError(
           statusCode: 401,
-          message: 'Connection timeout',
+          message: '连接超时，请检查网络',
         ),
       ).called(1);
     });
@@ -896,6 +896,20 @@ void main() {
 
       expect(results.length, 1);
       verify(() => mockLoading.showLoading(message: 'Batch...')).called(1);
+      verify(() => mockLoading.hideLoading()).called(1);
+    });
+
+    test('executeBatch 未指定文案时默认使用中文', () async {
+      final results = await KoiRequestExecutor.executeBatch<String>([
+        () async => Response(
+          requestOptions: RequestOptions(path: '/test1'),
+          data: <String, dynamic>{'rs': true, 'data': 'r1'},
+          statusCode: 200,
+        ),
+      ]);
+
+      expect(results.length, 1);
+      verify(() => mockLoading.showLoading(message: '加载中...')).called(1);
       verify(() => mockLoading.hideLoading()).called(1);
     });
 

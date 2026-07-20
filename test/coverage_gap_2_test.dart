@@ -722,7 +722,7 @@ void main() {
       );
       // 私有方法通过 onError 间接验证
       // 在第一批中已覆盖大部分 path
-      // badCertificate 走 _ => 'Network request failed' 分支
+      // badCertificate 走默认中文错误分支
       expect(interceptor, isNotNull);
     });
   });
@@ -810,7 +810,7 @@ void main() {
       verify(
         () => mockErrorHandler.handleAuthError(
           statusCode: 401,
-          message: 'Session expired, please log in again',
+          message: '登录已过期，请重新登录',
         ),
       ).called(1);
     });
@@ -887,7 +887,7 @@ void main() {
       verify(
         () => mockErrorHandler.handleAuthError(
           statusCode: 401,
-          message: 'Session expired, please log in again',
+          message: '登录已过期，请重新登录',
         ),
       ).called(1);
     });

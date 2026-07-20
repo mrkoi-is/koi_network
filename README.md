@@ -33,7 +33,7 @@ Add the package to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  koi_network: ^0.0.3
+  koi_network: ^0.0.5
 ```
 
 Then install dependencies:

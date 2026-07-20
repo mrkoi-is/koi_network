@@ -305,7 +305,7 @@ class KoiTokenRefreshInterceptor extends Interceptor {
     try {
       await KoiNetworkAdapters.errorHandler.handleAuthError(
         statusCode: 401,
-        message: 'Session expired, please log in again',
+        message: '登录已过期，请重新登录',
       );
     } catch (e) {
       KoiNetworkAdapters.logger.error(

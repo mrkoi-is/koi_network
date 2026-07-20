@@ -131,14 +131,15 @@ class KoiErrorHandlingInterceptor extends Interceptor {
   /// Returns a default error message for the given Dio error type.
   String _getDefaultErrorMessage(DioExceptionType type) {
     return switch (type) {
-      DioExceptionType.connectionTimeout => 'Connection timeout',
-      DioExceptionType.sendTimeout => 'Send timeout',
-      DioExceptionType.receiveTimeout => 'Receive timeout',
-      DioExceptionType.badResponse => 'Bad server response',
-      DioExceptionType.cancel => 'Request cancelled',
-      DioExceptionType.connectionError => 'Connection error',
-      DioExceptionType.unknown => 'Unknown error',
-      _ => 'Network request failed',
+      DioExceptionType.connectionTimeout => '连接超时，请检查网络',
+      DioExceptionType.sendTimeout => '发送超时，请检查网络',
+      DioExceptionType.receiveTimeout => '接收超时，请检查网络',
+      DioExceptionType.badResponse => '服务器响应异常',
+      DioExceptionType.cancel => '请求已取消',
+      DioExceptionType.connectionError => '网络连接失败，请检查网络',
+      DioExceptionType.badCertificate => 'SSL 证书验证失败，请检查网络配置',
+      DioExceptionType.unknown => '未知错误',
+      _ => '网络请求失败',
     };
   }
 }

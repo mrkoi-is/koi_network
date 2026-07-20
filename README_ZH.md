@@ -30,7 +30,7 @@
 
 ```yaml
 dependencies:
-  koi_network: ^0.0.3
+  koi_network: ^0.0.5
 ```
 
 然后安装依赖：

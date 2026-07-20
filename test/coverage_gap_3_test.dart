@@ -269,7 +269,7 @@ void main() {
       verify(
         () => mockErrorHandler.handleAuthError(
           statusCode: any(named: 'statusCode'),
-          message: 'Request cancelled',
+          message: '请求已取消',
         ),
       ).called(1);
     });
@@ -286,7 +286,7 @@ void main() {
       verify(
         () => mockErrorHandler.handleAuthError(
           statusCode: any(named: 'statusCode'),
-          message: 'Connection error',
+          message: '网络连接失败，请检查网络',
         ),
       ).called(1);
     });
@@ -303,7 +303,7 @@ void main() {
       verify(
         () => mockErrorHandler.handleAuthError(
           statusCode: any(named: 'statusCode'),
-          message: 'Unknown error',
+          message: '未知错误',
         ),
       ).called(1);
     });

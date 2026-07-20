@@ -1,8 +1,9 @@
 import 'package:dio/dio.dart';
-import 'package:test/test.dart';
+import 'package:json_annotation/json_annotation.dart';
 import 'package:koi_network/src/adapters/network_adapters.dart';
 import 'package:koi_network/src/executors/request_executor.dart';
 import 'package:koi_network/src/models/request_execution_options.dart';
+import 'package:test/test.dart';
 
 void main() {
   setUp(() {
@@ -180,7 +181,7 @@ void main() {
         ),
       );
 
-      expect(errorMsg, 'Connection timeout');
+      expect(errorMsg, '连接超时，请检查网络');
     });
 
     test('should handle non-Map response data (e.g. list)', () async {
@@ -305,7 +306,27 @@ void main() {
           requestOptions: RequestOptions(),
         ),
       );
-      expect(msg, 'Receive timeout');
+      expect(msg, '接收超时，请检查网络');
+    });
+
+    test('should format checked JSON failures with class and field', () {
+      Object? error;
+
+      try {
+        $checkedCreate<int>('CheckedModel', <String, dynamic>{'id': 'bad'}, (
+          convert,
+        ) {
+          return convert<int>('id', (value) => value as int);
+        });
+      } catch (caught) {
+        error = caught;
+      }
+
+      expect(error, isA<CheckedFromJsonException>());
+      expect(
+        KoiRequestExecutor.getErrorMessage(error!),
+        startsWith('解析失败: CheckedModel.id (原因:'),
+      );
     });
 
     test('should return toString for generic exceptions', () {

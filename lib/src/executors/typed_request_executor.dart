@@ -109,7 +109,7 @@ class KoiTypedRequestExecutor {
       if (opts.successCheck != null) {
         if (!opts.successCheck!(result.data)) {
           throw RequestLogicException<T>(
-            'Operation failed',
+            '操作失败，请重试',
             data: result.data,
             errorCode: result.code,
           );
@@ -121,7 +121,7 @@ class KoiTypedRequestExecutor {
       if (opts.dataCheck != null) {
         if (!opts.dataCheck!(result.data)) {
           throw RequestLogicException<T>(
-            'Invalid data format',
+            '数据格式异常，请重试',
             data: result.data,
             errorCode: result.code,
           );
@@ -135,7 +135,7 @@ class KoiTypedRequestExecutor {
       if (result.isSuccess) {
         if (opts.dataNotNull && result.data == null) {
           throw RequestLogicException<T>(
-            'No data available',
+            '暂无相关数据',
             data: result.data,
             errorCode: result.code,
           );
@@ -147,7 +147,7 @@ class KoiTypedRequestExecutor {
         // 业务逻辑错误
         // Business logic error
         throw RequestLogicException<T>(
-          result.message ?? 'Operation failed',
+          result.message ?? '操作失败，请重试',
           data: result.data,
           errorCode: result.code,
         );
@@ -243,7 +243,7 @@ class KoiTypedRequestExecutor {
       // Show loading prompt
       if (opts.showLoading) {
         KoiNetworkAdapters.loading.showLoading(
-          message: opts.loadingText ?? 'Loading...',
+          message: opts.loadingText ?? '加载中...',
         );
       }
 
@@ -315,7 +315,7 @@ class KoiTypedRequestExecutor {
       } else {
         if (stopOnError) {
           throw RequestLogicException<T>(
-            result.message ?? 'Request failed',
+            result.message ?? '请求失败',
             data: result.data,
             errorCode: result.code,
           );

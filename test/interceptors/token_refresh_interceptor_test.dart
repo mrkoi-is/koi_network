@@ -240,7 +240,7 @@ void main() {
         verify(
           () => mockErrorHandler.handleAuthError(
             statusCode: 401,
-            message: 'Session expired, please log in again',
+            message: '登录已过期，请重新登录',
           ),
         ).called(1);
         verify(() => handler.reject(error)).called(1);

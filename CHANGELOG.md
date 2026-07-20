@@ -1,12 +1,14 @@
 # Changelog
 
-## [0.0.5] - 2026-07-11
+## [0.0.5] - 2026-07-20
 
 ### Fixed
 - Preserve `null` request bodies for body-less GET and POST requests instead
   of encoding them as an empty JSON object.
 - Do not invoke global authentication-failure handling for unauthenticated or
   configured public endpoints that return an authentication status.
+- Restore field-level messages for checked JSON deserialization failures.
+- Use Chinese defaults for request, loading, authentication, and Dio errors.
 
 ### Changed
 - Apply `tokenRefreshWhiteList` consistently to token refresh and global

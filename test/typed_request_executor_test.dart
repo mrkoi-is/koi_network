@@ -29,9 +29,13 @@ class MockTypedResult<T> implements KoiTypedResponse<T> {
 class MockLoadingAdapter implements KoiLoadingAdapter {
   int showCount = 0;
   int hideCount = 0;
+  String? lastMessage;
 
   @override
-  void showLoading({String? message}) => showCount++;
+  void showLoading({String? message}) {
+    showCount++;
+    lastMessage = message;
+  }
 
   @override
   void hideLoading() => hideCount++;
@@ -143,7 +147,7 @@ void main() {
         );
 
         expect(result, isNull);
-        expect(mockErrorHandler.errors, contains('Operation failed'));
+        expect(mockErrorHandler.errors, contains('操作失败，请重试'));
       });
 
       test('dataNotNull 为 true 时 data 为 null 抛出异常', () async {
@@ -154,7 +158,7 @@ void main() {
         );
 
         expect(result, isNull);
-        expect(mockErrorHandler.errors, contains('No data available'));
+        expect(mockErrorHandler.errors, contains('暂无相关数据'));
       });
 
       test('dataNotNull 为 false 时 data 为 null 返回 null', () async {
@@ -228,7 +232,7 @@ void main() {
         );
 
         expect(result, isNull);
-        expect(mockErrorHandler.errors, contains('Operation failed'));
+        expect(mockErrorHandler.errors, contains('操作失败，请重试'));
       });
 
       test('dataCheck 失败抛出异常', () async {
@@ -241,7 +245,7 @@ void main() {
         );
 
         expect(result, isNull);
-        expect(mockErrorHandler.errors, contains('Invalid data format'));
+        expect(mockErrorHandler.errors, contains('数据格式异常，请重试'));
       });
 
       test('dataCheck 成功返回数据并调用 onSuccess', () async {
@@ -347,6 +351,7 @@ void main() {
         ]);
 
         expect(results, ['a', 'b']);
+        expect(mockLoading.lastMessage, '加载中...');
       });
 
       test('顺序执行多个请求', () async {
